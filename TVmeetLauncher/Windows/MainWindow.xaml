@@ -1,0 +1,60 @@
+﻿<mah:MetroWindow x:Class="TVmeetLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        mc:Ignorable="d"
+        xmlns:local="clr-namespace:TVmeetLauncher"
+        DataContext="{x:Static local:BaseViewModel.Instance}"
+        Style="{StaticResource Window_Common}"
+
+        Title="テレビ会議システム"
+        TitleForeground="AliceBlue" TitleCharacterCasing="Normal"
+        WindowTitleBrush="#004098" NonActiveWindowTitleBrush="#6fb6c9"
+        WindowState="Maximized" IgnoreTaskbarOnMaximize="True" Topmost="False"
+        ShowCloseButton="False" ShowSystemMenuOnRightClick="False"
+        local:WindowSinker.AlwaysOnBottom="True"
+        
+        d:DesignHeight="539.771" d:DesignWidth="717.665"
+        BorderThickness="0"
+        GlowBrush="Black" NonActiveGlowBrush="DarkSlateGray"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        ShowIconOnTitleBar="True"
+        ShowTitleBar="False"
+        WindowTransitionsEnabled="True"
+        FontFamily="Helvetica Neue" 
+        ContentRendered="MetroWindow_ContentRendered" Closing="MetroWindow_Closing" KeyDown="MetroWindow_KeyDown">
+
+    <!--<mah:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <Image Source="{Binding}" Width="20" Height="20"/>
+        </DataTemplate>
+    </mah:MetroWindow.IconTemplate>-->
+
+    <!--<mah:MetroWindow.TitleTemplate>
+        <DataTemplate>
+            <TextBlock Text="{TemplateBinding Content}"
+                   TextTrimming="CharacterEllipsis"
+                   VerticalAlignment="Center"
+                   Margin="0 3 0 0"
+                   FontWeight="Regular"
+                   FontSize="12"
+                   FontFamily="UD新ゴNT Pro" />
+        </DataTemplate>
+    </mah:MetroWindow.TitleTemplate>-->
+
+    <Grid  Name="mainGrid" Background="#6fb6c9" ShowGridLines="False">
+        <Image Source="/Images/logo/smabri_logo.png" Grid.Column="0" Grid.Row="0" 
+               Height="{Binding TVlogoHeight}" Width="{Binding TVlogoWidth}" 
+               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,15,0,0"
+               Visibility="{Binding ComponntsVisibility}"/>
+        <Image Source="/Images/logo/logo-base-wh.png" 
+               Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="3"
+               Height="{Binding EleLogoHeight}" Width="{Binding EleLogoWidth}"
+               HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20"
+               Visibility="{Binding ComponntsVisibility}"/>
+    </Grid>
+</mah:MetroWindow>

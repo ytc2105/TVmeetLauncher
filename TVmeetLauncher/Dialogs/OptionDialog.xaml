@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="TVmeetLauncher.OptionDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:TVmeetLauncher"
+             DataContext="{x:Static local:CommandViewModel.Instance}"
+             mc:Ignorable="d" 
+             d:DesignHeight="337.797" d:DesignWidth="410.569" 
+             
+             FontFamily="UD新ゴNT Pro" >
+
+    <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" Background="AliceBlue" BorderBrush="LightGray">
+        <Grid Margin="32" ShowGridLines="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20*" />
+                <RowDefinition Height="61*" />
+                <RowDefinition Height="31*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Margin="0,0,0,16" Text="設定"
+                   FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=HeadlineFontSize}"                   
+                   FontWeight="Bold" />
+
+            <StackPanel Grid.Row="1" Orientation="Vertical">
+                
+                <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" BorderBrush="LightGray" >
+                    <DockPanel>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="タスクバーを非表示にする" Margin="10"
+                               FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=SubtitleFontSize}"/>
+                            <TextBlock Text="無効にすると、タスクバーが表示されます。" Margin="10 0 10 10"
+                               FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"
+                               Foreground="Gray"/>
+                        </StackPanel>
+
+                        <!--<ToggleButton IsChecked="{Binding IsTaskBarHide}" HorizontalAlignment="Right" IsChecked="True" Margin="20 0 10 0"
+                              Command="{Binding HideTaskbarCommand}"
+                              CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" 
+                              Visibility="Collapsed"/>-->
+
+                        <CheckBox IsChecked="{Binding IsTaskBarHide}" HorizontalAlignment="Right" Margin="20 0 10 0"
+                            materialDesign:CheckBoxAssist.CheckBoxSize=
+                                  "{Binding DialogCheckBoxSize, Source={x:Static local:BaseViewModel.Instance}}" />
+                            <!--Command="{Binding HideTaskbarCommand}"
+                            CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"--> 
+                    </DockPanel>
+                </materialDesign:Card>
+
+                <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" BorderBrush="LightGray" >
+                    <DockPanel>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                            <TextBlock Text="タスクバーを自動的に隠す" Margin="10"
+                               FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=SubtitleFontSize}"/>
+                            <TextBlock Text="無効にすると、タスクバーが常に表示されます。" Margin="10 0 10 10"
+                               FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"
+                               Foreground="Gray"/>
+                        </StackPanel>
+
+                        <CheckBox IsChecked="{Binding IsTaskBarAutoHide}" HorizontalAlignment="Right" Margin="20 0 10 0"
+                            materialDesign:CheckBoxAssist.CheckBoxSize=
+                                "{Binding DialogCheckBoxSize, Source={x:Static local:BaseViewModel.Instance}}" />
+                            <!--Command="{Binding AutoHideTaskbarCommand}"
+                            CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"--> 
+                    </DockPanel>
+                </materialDesign:Card>
+                
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="2"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    Margin="0,0,0,0"
+                    Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=DialogButtonHeight}"
+                    FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    Content="OK"
+                    IsDefault="True"
+                    Style="{StaticResource MaterialDesignFlatDarkButton}"
+                    materialDesign:ButtonAssist.CornerRadius="5" />
+            </StackPanel>
+            
+        </Grid>
+    </materialDesign:Card>
+</UserControl>
