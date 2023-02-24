@@ -268,6 +268,40 @@ namespace WIN32API
             SetWindowPos(hWnd, (IntPtr)Zhwnd.HWND_TOP, 0, 0, 0, 0, 
                 (uint)SWPos.SWP_NOMOVE | (uint)SWPos.SWP_NOSIZE);
         }
+
+
+        private const int GW_HWNDNEXT = 2;
+        [DllImport("USER32.DLL")]
+        private extern static IntPtr GetParent(IntPtr hwnd);
+        [DllImport("USER32.DLL")]
+        private extern static IntPtr GetWindow(IntPtr hwnd, int wCmd);
+        [DllImport("USER32.DLL")]
+        private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+        // プロセスID(pid)をウィンドウハンドル(hwnd)に変換する
+        public static IntPtr GetHwndFromPid(int pid)
+        {
+            IntPtr hwnd = FindWindow(null, null);
+            while (hwnd != IntPtr.Zero)
+            {
+                if (GetParent(hwnd) == IntPtr.Zero && IsWindowVisible(hwnd))
+                {
+                    if (pid == GetPidFromHwnd(hwnd))
+                    {
+                        return hwnd;
+                    }
+                }
+                hwnd = GetWindow(hwnd, GW_HWNDNEXT);
+            }
+            return hwnd;
+        }
+
+        // ウィンドウハンドル(hwnd)をプロセスID(pid)に変換する
+        public static int GetPidFromHwnd(IntPtr hwnd)
+        {
+            GetWindowThreadProcessId(hwnd, out int pid);
+            return pid;
+        }
     }
 
     public static class Psapi

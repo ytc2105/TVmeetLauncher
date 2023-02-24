@@ -243,6 +243,7 @@ namespace TVmeetLauncher
         }
 
         private int _processID = -1;
+        private IntPtr _hWnd = IntPtr.Zero; //@@TEST
         private string _iconPath;
         private string _exePath;
         private string _exeArgs;
@@ -250,6 +251,11 @@ namespace TVmeetLauncher
         {
             get { return _processID; }
             set { _processID = value; }
+        }
+        public IntPtr HWnd
+        { 
+            get { return _hWnd; }
+            set { _hWnd = value; }
         }
         public string IconPath
         {
