@@ -3,19 +3,20 @@
 using MahApps.Metro.Controls;
 using MaterialDesignThemes.Wpf;
 using Microsoft.WindowsAPICodePack.Shell;
+using Sprache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Sprache;
 using WIN32API;
-using System.Text;
 
 namespace TVmeetLauncher
 {
@@ -25,7 +26,6 @@ namespace TVmeetLauncher
     public partial class LauncherWindow : MetroWindow
     {
         static readonly Logger logger = Logger.GetInstance;
-        static readonly CommandViewModel cvm = CommandViewModel.Instance;
 
         /// <summary>
         /// 会議アプリ情報リスト AppName=会議アプリ名，RegistryPath=レジストリパス, Hkey=ルートレジストリキー 
@@ -48,11 +48,6 @@ namespace TVmeetLauncher
         public LauncherWindow()
         {
             InitializeComponent();
-
-            //logger = Logger.GetInstance;
-            logger.WriteLog("TVmeetLauncher start.");
-            logger.LogLifeSpan = 30; //ログの寿命(日)
-            logger.CheckOldLogfile();
 
             try
             {
@@ -106,21 +101,19 @@ namespace TVmeetLauncher
                         default:
                             break;
                     }
-
                     Grid.SetColumn(app, column++);
                     Grid.SetRow(app, row);
                 }
                 logger.WriteLog(string.Format("Setting Complete, Apps Count {0}.", appCnt));
                 this.MinHeight *= ConstParams.ViewScale; this.MinWidth *= ConstParams.ViewScale;
+
+                BaseViewModel.Instance.IsLauncherReady = true;
+                Task.Run(() => TaskBarPolling()); //@@TEST POLLING
             }
             catch (Exception e)
             {
-                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Fatal);
-            }
-            finally
-            {
-                BaseViewModel.Instance.IsLauncherReady = true;
-                Task.Run(() => TaskBarPolling()); //@@TEST POLLING
+                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Fatal);  
+                throw e; //@@TEST 例外再スロー、App.xaml.csでキャッチして強制終了
             }
         }
 
@@ -193,7 +186,7 @@ namespace TVmeetLauncher
                                     } // UWP(WindowsStore)app
                                     else {
                                         iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\Skype\Skype.exe";
-                                        exePath = @"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                        exePath = "skype.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
                                     }
 
                                     // arguments
@@ -218,7 +211,7 @@ namespace TVmeetLauncher
                 else
                 {
 #if PWA
-                    //@@TEST Google MeetのHPをPWAで開くための処理　※アイコン取得が困難な為，未実装
+                    //@@TEST Google MeetのURLをPWAで開くための処理　※アイコン取得が困難な為，未実装
                     if (meetApp == ConstParams.MeetingApplication.GoogleMeet)
                     {
                         SetGoogleMeetPWA();
@@ -270,7 +263,6 @@ namespace TVmeetLauncher
                                 {
                                     if (appkey.GetValue("Path") != null)
                                     {    // Icon
-                                        //iconPath = appkey.GetValue("").ToString(); //@@TEST for debug
                                         iconPath = @"..\Images\logo\gm.png";
                                         // exe
                                         exePath = appkey.GetValue("Path") + exeName;  // 引数削除（chrome.exe実行パス取得）
@@ -310,7 +302,7 @@ namespace TVmeetLauncher
             Image image = new Image
             {
                 Name = "img" + appName.Replace(" ", String.Empty),
-                Height = ConstParams.iconHeight * ConstParams.ViewScale,    //@@TEST
+                Height = ConstParams.iconHeight * ConstParams.ViewScale,
                 Width = ConstParams.iconWidth * ConstParams.ViewScale,
             };
             if ( !System.IO.Path.IsPathRooted(iconPath) )
@@ -322,7 +314,7 @@ namespace TVmeetLauncher
             ButtonEx button = new ButtonEx
             {
                 Name = "btn" + appName.Replace(" ", String.Empty),
-                Height = (ConstParams.iconHeight + ConstParams.buttonMargin) * ConstParams.ViewScale, //@@TEST
+                Height = (ConstParams.iconHeight + ConstParams.buttonMargin) * ConstParams.ViewScale,
                 Width = (ConstParams.iconWidth + ConstParams.buttonMargin) * ConstParams.ViewScale,
                 Cursor = Cursors.Hand,
                 ToolTip = appName + " を起動",
@@ -359,78 +351,41 @@ namespace TVmeetLauncher
         {
             ButtonEx btn = (ButtonEx)sender;
             MeetAppInfo meet = btn.AppInfo;
-            string exePath = meet.ExePath;
-            string args = meet.ExeArgs;
             bool isWindowExist = false;
 
             //画面がある場合、最前面へ(現状、※Google Meetのみ対応)
             if (meet.MeetApp == ConstParams.MeetingApplication.GoogleMeet)
-                isWindowExist = MoveWindowToTop(meet);
+                isWindowExist = SearchWindow(meet);
             
             if (!isWindowExist)
             {
                 using (System.Diagnostics.Process p = new System.Diagnostics.Process())
                 {
-                    p.StartInfo.FileName = exePath;
-                    p.StartInfo.Arguments = args;
+                    p.StartInfo.FileName = meet.ExePath;
+                    p.StartInfo.Arguments = meet.ExeArgs;
                     p.StartInfo.UseShellExecute = true;
                     try
                     {
                         p.Start();
-                        // Loading effect
-                        ProcAfterClick(btn);
-
                         logger.WriteLog("Start Application: " + p.ProcessName + ", | Title:" + p.MainWindowTitle + " | ID:" + p.Id);
                     }
                     catch (Exception ex)
                     {
                         logger.WriteLog("Exception error occured: [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + ex.Message, Logger.LogLevel.Error);
                     }
-                    finally
-                    {
-
-                    }
                 }
-            }
-        }
-
-        #region FindWindow
-        /// <summary>
-        /// ウィンドウを探索し、最前面へ表示する
-        /// </summary>
-        /// <param name="meet">会議情報インスタンス</param>
-        /// <returns>ウィンドウが見つかった:true 見つからなかった:false</returns>
-        private bool MoveWindowToTop(MeetAppInfo meet) 
-        {
-            string meetAppName = meet.AppName, 
-                searchFileName = meet.ExePath;
-            bool isWindowExist;
-
-            isWindowExist = SearchWindow(meet); // ※毎回Window探索を実行
-
-            if (!isWindowExist)
-                return false;
-
-            IntPtr hWnd = meet.HWnd;
-            int processId = WinUIAPI.GetPidFromHwnd(hWnd);
-            if (hWnd != IntPtr.Zero && processId != 0)
-            {
-                //ウィンドウを前面へ移動
-                WinUIAPI.MoveWindowToTop(hWnd);
-
-                logger.WriteLog("Move window to top side is done. => MeetAppName:" + meetAppName 
-                    + " | searchFileName:" + searchFileName + " | ProcessID:" + processId + " | hWnd:" + meet.HWnd, Logger.LogLevel.Debug);
-                return true; 
             }
             else
             {
-                logger.WriteLog("Failed to move window to top side. => MeetAppName:" + meetAppName + " | searchFileName:" + searchFileName 
-                    + " | ProcessID:" + meet.ProcessID, Logger.LogLevel.Debug);
-                // プロセスIDをリセット
-                meet.ProcessID = -1;
-                meet.HWnd = IntPtr.Zero;
-                return false;
+                //ウィンドウを前面へ移動
+                WinUIAPI.MoveWindowToTop(meet.HWnd);
+                string title        = WinUIAPI.GetTitleFromHwnd(meet.HWnd),
+                       className    = WinUIAPI.GetClassNameFromHwnd(meet.HWnd);
+                logger.WriteLog("Move window to top side is done. => MeetAppName:" + meet.AppName
+                    + " | Title:" + title + " | ClassName:" + className + " | hWnd:" + meet.HWnd.ToString(), Logger.LogLevel.Info);
             }
+            // Loading effect(連続クリック防止)
+            ProcAfterClick(btn);
         }
 
         /// <summary>
@@ -441,22 +396,13 @@ namespace TVmeetLauncher
         /// <returns>true:ウィンドウが見つかった false:見つからなかった</returns>
         private bool SearchWindow(MeetAppInfo meet)
         {
-            string meetAppName = meet.AppName,
-            searchFileName = meet.ExePath;
-
-            StringBuilder exeFileFullPath = new StringBuilder(1000);
-
             //会議名がタイトルに含まれるウィンドウ探索
-            List<IntPtr> windows = FindWindowsWithText(meetAppName);
+            List<IntPtr> windows = WinUIAPI.FindWindowsWithText(meet.AppName);
 
-            foreach(IntPtr hWnd in windows) 
+            foreach(IntPtr hWnd in windows)
             {
                 if (hWnd != IntPtr.Zero)
                 {
-                    // ※NoWork PWAウィンドウでなかったらスキップ
-                    //if (!IsPWAWindow(hWnd))
-                    //    continue;
-
                     //ウィンドウを作成したプロセスのIDを取得する
                     int processId = WinUIAPI.GetPidFromHwnd(hWnd);
 
@@ -464,11 +410,13 @@ namespace TVmeetLauncher
                     //プロセスハンドルオープン
                     var handle = Kernel32.OpenProcess(Kernel32.ProcessSecurity.ProcessVmRead |
                         Kernel32.ProcessSecurity.ProcessQueryInformation, false, (uint)processId);
+                    StringBuilder exeFileFullPath = new StringBuilder(1024);
+
                     try
                     {
                         //ハンドルの実行ファイルパスを格納
                         if (handle != IntPtr.Zero)
-                            Psapi.GetModuleFileNameEx(handle, IntPtr.Zero, exeFileFullPath, 1000);
+                            Psapi.GetModuleFileNameEx(handle, IntPtr.Zero, exeFileFullPath, (uint)exeFileFullPath.Capacity);
                     }
                     catch (Exception ex)
                     {
@@ -482,80 +430,23 @@ namespace TVmeetLauncher
 
                     if (exeFileFullPath != null)
                     {   // 実行ファイルパスが一致
-                        if (searchFileName.Equals(exeFileFullPath.ToString()))
+                        if (meet.ExePath.Equals(exeFileFullPath.ToString()))
                         {
                             //該当ウィンドウのProcessIDを会議情報へ保存
                             meet.ProcessID = processId;
                             meet.HWnd = hWnd;
-                            logger.WriteLog("Find Window.=> MeetAppName:" + meetAppName
-                                + " | searchFileName:" + searchFileName + " | ProcessID:" + processId, Logger.LogLevel.Debug);
+                            logger.WriteLog("Find Window.=> MeetAppName:" + meet.AppName
+                                + " | searchFileName:" + meet.ExePath + " | ProcessID:" + processId, Logger.LogLevel.Debug);
                             return true;
                         }
                     }
                 }
             }
 
-            logger.WriteLog("Can't Find Window => MeetAppName:" + meetAppName + " | searchFileName:" + searchFileName,
+            logger.WriteLog("Can't Find Window => MeetAppName:" + meet.AppName + " | searchFileName:" + meet.ExePath,
                     Logger.LogLevel.Debug);
             return false;
         }
-
-
-        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-        [DllImport("user32.dll")]
-        public static extern int GetClassName(IntPtr hWnd, StringBuilder text, int count);
-
-        public static List<IntPtr> FindWindowsWithText(string text)
-        {
-            List<IntPtr> windows = new List<IntPtr>();
-            EnumWindows(delegate (IntPtr hWnd, IntPtr lParam)
-            {
-                StringBuilder sb = new StringBuilder(256);
-                GetWindowText(hWnd, sb, sb.Capacity);
-                if (sb.ToString().Contains(text))
-                {
-                    windows.Add(hWnd);
-                }
-                return true;
-            }, IntPtr.Zero);
-
-            return windows;
-        }
-
-        // ※NoWork
-        public static bool IsPWAWindow(IntPtr hWnd)
-        {
-            const string pwaWindowClassName = "Chrome_WidgetWin_0";
-
-            StringBuilder classNameBuilder = new StringBuilder(256);
-            GetClassName(hWnd, classNameBuilder, classNameBuilder.Capacity);
-
-            logger.WriteLog("Window Class name:" + classNameBuilder.ToString(), Logger.LogLevel.Debug);
-
-            if (classNameBuilder.ToString() == pwaWindowClassName)
-            {
-                /// ウィンドウタイトル取得済みの為オミット
-                //StringBuilder titleBuilder = new StringBuilder(256);
-                //GetWindowText(hWnd, titleBuilder, titleBuilder.Capacity);
-                //if (!string.IsNullOrEmpty(titleBuilder.ToString()))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        #endregion
-
-
 
         /// <summary>
         /// コンテンツクリック後の処理
@@ -572,18 +463,11 @@ namespace TVmeetLauncher
             await Task.Delay(2000);
             //Thread.Sleep(3000);
 
-            // Minimize Window size
-            //this.WindowState = WindowState.Minimized;
-
             // End effect, Enable button
             ButtonProgressAssist.SetValue(button, 1);
             ButtonProgressAssist.SetIsIndicatorVisible(button, false);
             ButtonProgressAssist.SetIsIndeterminate(button, false);
             button.IsEnabled = true;
-
-            //@@TEST ウィンドウ情報を保存
-            //if (button.AppInfo.MeetApp == ConstParams.MeetingApplication.GoogleMeet)
-            //    SearchWindow(button.AppInfo);
         }
 
         /// <summary>
@@ -614,17 +498,6 @@ namespace TVmeetLauncher
             WinUIAPI.TskBarDisp();
         }
 
-        private void ShowContextMenu()
-        {
-            var contextMenu = Resources["contextMenu"] as ContextMenu;
-            contextMenu.IsOpen = true;
-        }
-
-        private void imgIcon_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //ShowContextMenu();
-        }
-
         private void MetroWindow_KeyDown(object sender, KeyEventArgs e)
         {
 #if !DEBUG
@@ -636,18 +509,6 @@ namespace TVmeetLauncher
 #endif
         }
 
-        private async void TaskBarPolling() 
-        {
-            while(cvm.IsTaskBarPollingRun)
-            {
-                await Task.Delay(300);
-                if (cvm.IsTaskBarPollingRun) // delay中フラグ変更後も即時対応するため
-                {
-                    cvm.VerifyTaskBarHide(); //@@TEST TaskBarHide
-                }
-            }
-        }
-
         /// <summary>
         /// "(ダブルクォート)パーサー
         /// </summary>
@@ -655,27 +516,21 @@ namespace TVmeetLauncher
                                                             from content in Parse.CharExcept('"').Many().Text()
                                                             from close in Parse.Char('"')
                                                             select content).Token();
-    }
 
-    /// <summary>
-    /// 拡張Buttonコントロール
-    /// ・会議アプリ情報プロパティ追加
-    /// </summary>
-    public class ButtonEx : Button
-    {
-        static ButtonEx()
+        //@@TEST TaskBar非表示-自動的に隠す対応用
+        private async void TaskBarPolling() 
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(ButtonEx), new FrameworkPropertyMetadata(typeof(ButtonEx)));
+            CommandViewModel cvm = CommandViewModel.Instance;
+            while (cvm.IsTaskBarPollingRun)
+            {
+                await Task.Delay(300);
+                if (cvm.IsTaskBarPollingRun) // delay中フラグ変更後も即時対応するため
+                {
+                    cvm.VerifyTaskBarHide();
+                }
+            }
         }
 
-        private MeetAppInfo _appInfo;
-        /// <summary>
-        /// 会議アプリクラスプロパティ
-        /// </summary>
-        public MeetAppInfo AppInfo
-        {
-            get { return _appInfo; }
-            set { _appInfo = value; }
-        }
     }
+
 }

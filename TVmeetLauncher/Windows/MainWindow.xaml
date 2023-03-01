@@ -28,24 +28,6 @@
         FontFamily="Helvetica Neue" 
         ContentRendered="MetroWindow_ContentRendered" Closing="MetroWindow_Closing" KeyDown="MetroWindow_KeyDown">
 
-    <!--<mah:MetroWindow.IconTemplate>
-        <DataTemplate>
-            <Image Source="{Binding}" Width="20" Height="20"/>
-        </DataTemplate>
-    </mah:MetroWindow.IconTemplate>-->
-
-    <!--<mah:MetroWindow.TitleTemplate>
-        <DataTemplate>
-            <TextBlock Text="{TemplateBinding Content}"
-                   TextTrimming="CharacterEllipsis"
-                   VerticalAlignment="Center"
-                   Margin="0 3 0 0"
-                   FontWeight="Regular"
-                   FontSize="12"
-                   FontFamily="UD新ゴNT Pro" />
-        </DataTemplate>
-    </mah:MetroWindow.TitleTemplate>-->
-
     <Grid  Name="mainGrid" Background="#6fb6c9" ShowGridLines="False">
         <Image Source="/Images/logo/smabri_logo.png" Grid.Column="0" Grid.Row="0" 
                Height="{Binding TVlogoHeight}" Width="{Binding TVlogoWidth}" 

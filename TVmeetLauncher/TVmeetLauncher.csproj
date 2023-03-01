@@ -308,6 +308,7 @@
     <Compile Include="Dialogs\CloseDialog.xaml.cs">
       <DependentUpon>CloseDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
     <Compile Include="Sources\WindowSinker.cs" />
     <Compile Include="Windows\BaseViewModel.cs" />
     <Compile Include="Windows\LauncherWindow.xaml.cs">

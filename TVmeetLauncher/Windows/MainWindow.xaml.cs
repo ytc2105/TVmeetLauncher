@@ -21,6 +21,7 @@ namespace TVmeetLauncher
             int width = screen.Bounds.Width;
             //aint height = screen.Bounds.Height;
             ConstParams.ResolWidth = width;
+            Logger.GetInstance.WriteLog("Start TVmeetLauncher.");
 
             InitializeComponent();
             WinUIAPI.TskBarHide();
@@ -45,14 +46,9 @@ namespace TVmeetLauncher
             LauncherWindow launcherWindow = new LauncherWindow();
 #if !DEBUG
             SplashScreen splashScreen = new SplashScreen();
-            //@@TEST
-            //launcherWindow.Initialized += new EventHandler(splashScreen.CloseEvent);
-            //splashScreen.Owner= this;
             splashScreen.ShowDialog();
 #endif
-            //launcherWindow.Owner = this;
             launcherWindow.Show();
-
             // ランチャ画面を閉じたらメイン画面も閉じる
             launcherWindow.Closed += new EventHandler(this.CloseEvent);
             // ランチャ画面の終了処理を、終了ボタン押下時のアクションコマンドへ追加
@@ -64,6 +60,7 @@ namespace TVmeetLauncher
             CommandViewModel.Instance.IsTaskBarPollingRun = false;
             WinUIAPI.TskBarDisp();
             WinUIAPI.TskBarAutoHide(false);
+            Logger.GetInstance.WriteLog("Exit TVmeetLauncher.");
         }
 
         private void MetroWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)

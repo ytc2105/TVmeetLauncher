@@ -28,13 +28,6 @@
         FontFamily="Helvetica Neue" FontSize="{Binding CaptionFontSize}"
         KeyDown="MetroWindow_KeyDown">
 
-    <mah:MetroWindow.IconTemplate>
-        <DataTemplate>
-            <Image Source="{Binding}" Width="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarIconSize}" 
-                   Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarIconSize}" Margin="3 0 0 0" />
-        </DataTemplate>
-    </mah:MetroWindow.IconTemplate>
-
     <mah:MetroWindow.TitleTemplate>
         <DataTemplate>
             <TextBlock Name="titleBarText" Text="{TemplateBinding Content}"
@@ -50,7 +43,7 @@
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands Margin="7 0 0 0" ShowLastSeparator="False">
             <Image Name="imgIcon" Source="{Binding Icon, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" Width="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarIconSize}" 
-                   Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarIconSize}" MouseDown="imgIcon_MouseDown"/>
+                   Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarIconSize}"/>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
 

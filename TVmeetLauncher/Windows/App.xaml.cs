@@ -93,11 +93,12 @@ namespace TVmeetLauncher
             MessageBox.Show($"Handle Exception occured.\n--ERROR CONTENTS--\n{e?.ToString()}");
 #endif
             MessageBox.Show($"申し訳ありません。\nアプリケーション実行中に異常を検知したため\nテレビ会議システムを終了します。\n\n--異常メッセージ--\n{e?.Message}", "異常終了");
-            Logger.GetInstance.WriteLog($"Handle Exception occured. | {e?.ToString()}", Logger.LogLevel.Error);
+            Logger.GetInstance.WriteLog($"Handle Exception occured. | {e?.ToString()}", Logger.LogLevel.Fatal);
+            
             CommandViewModel.Instance.IsTaskBarPollingRun = false;
-            //CommandViewModel.Instance.HideTaskbarCommand;
             WinUIAPI.TskBarDisp();
             WinUIAPI.TskBarAutoHide(false);
+            Logger.GetInstance.WriteLog($"Terminate \"TV Meeting Launcher\".", Logger.LogLevel.Fatal);
             Environment.Exit(1);
         }
 

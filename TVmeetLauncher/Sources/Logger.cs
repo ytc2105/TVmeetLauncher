@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
+using TVmeetLauncher.Properties;
 
 namespace TVmeetLauncher
 {
@@ -16,6 +15,8 @@ namespace TVmeetLauncher
         #region "メンバー変数"
         // シングルトンクラスアクセス用変数
         private static readonly Logger instance = new Logger();
+        // 圧縮中フラグ
+        private bool isCompressing = false;
         #endregion
 
         #region "公開列挙型"
@@ -54,52 +55,67 @@ namespace TVmeetLauncher
             get { return instance; }
         }
 
+        /// ログ取得実行フラグ
+        public bool IsLogging { get; set; }
         /// ログ出力ディレクトリ
         public string LogFileDir { get; set; }
-
-        /// ログファイル名
+        /// 圧縮ログ出力ディレクトリ
+        public string LogOldFileDir { get; set; }
+        /// ログファイルプリフィックス名
         public string LogFileName { get; set; }
-
-        /// ログファイルの書込モード
-        public LogWriteModeType LogWriteMode { get; set; }
-
         /// ログファイル名のフォーマット
         public LogFormatFileNameType LogFormatFileName { get; set; }
-
+        /// ログファイルのフルパス
+        public string LogFileFullPath { get; set; }
+        /// ログファイルの書込モード
+        public LogWriteModeType LogWriteMode { get; set; }
         /// ログファイルの既定出力レベル
         public LogLevel LogDefaultLevel { get; set; }
-
         /// ログの寿命(日)
         public int LogLifeSpan { get; set; }
-
+        /// ログの最大サイズ(Byte)
+        public int LogFileMaxSize { get; set; }
         /// エンコード
         public string Encode { get; set; }
-
         #endregion
 
         #region "コンストラクタ"
         private Logger()
         {
-            // 各プロパティに初期値を設定
+            /// 各プロパティに初期値を設定
+            // ログ取得実行フラグ
+            IsLogging = Settings.Default.IS_LOGGING; 
             // ログ出力先ディレクトリ
-            LogFileDir = System.AppDomain.CurrentDomain.BaseDirectory + "\\log";
-            // ログファイル名
-            LogFileName = "Log";
-            // ログファイルの書込モード
-            LogWriteMode = LogWriteModeType.Append;
+            LogFileDir = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, Settings.Default.LOGDIR_PATH); //"\\log";
+            // 圧縮ログ出力ディレクトリ
+            LogOldFileDir = Path.Combine(LogFileDir,Settings.Default.LOGOLDDIR_PATH);
+            // ログファイルプリフィックス名
+            LogFileName = Settings.Default.LOGFILE_NAME; //"Log";
             // ログファイル名のフォーマット
             LogFormatFileName = LogFormatFileNameType.YYYYMMDD;
+            // ログファイルのフルパス
+            LogFileFullPath = Path.Combine(LogFileDir, CreateLogFilePath(LogFileName));
+            // ログファイルの書込モード
+            LogWriteMode = Settings.Default.LOG_ISAPPEND ? LogWriteModeType.Append : LogWriteModeType.Over;
             // ログファイルの既定出力レベル
-            LogDefaultLevel = LogLevel.Info;
+            LogDefaultLevel = (LogLevel)Settings.Default.LOG_LEVEL; //LogLevel.Info;
             // ログの寿命(日)
-            LogLifeSpan = 30;
+            LogLifeSpan = Settings.Default.LOGFILE_PERIOD; //30;
+            if (LogLifeSpan < 0)
+                LogLifeSpan = 0;
+            // ログの最大サイズ(Byte)
+            LogFileMaxSize = Settings.Default.LOGFILE_MAXSIZE; // 1048576(1MB)
+            if (LogFileMaxSize < 0)
+                IsLogging = false;
             // エンコード
             Encode = "utf-8"; //"shift_jis";
-        }
-        #endregion
 
-        #region "公開メソッド"
-        #region "ログファイル書き込み"
+            // 古いログファイルを削除
+            CheckOldLogfile();
+        }
+#endregion
+
+#region "公開メソッド"
         /// <summary>
         /// ログファイル書き込み
         /// </summary>
@@ -107,6 +123,9 @@ namespace TVmeetLauncher
         /// <param name="writeLogLevel">書込ログレベル</param>
         public bool WriteLog(string logMsg, LogLevel writeLogLevel)
         {
+            if(!IsLogging)
+                return true;
+
             try
             {
                 // ログ出力文字列作成
@@ -114,17 +133,33 @@ namespace TVmeetLauncher
 
                 // 書込ディレクトリが無ければ、作成
                 if (!Directory.Exists(LogFileDir))
-                {
                     Directory.CreateDirectory(LogFileDir);
-                }
 
                 // ログ書込モードによって[追記/上書]を行う
-                using (StreamWriter Fs = new StreamWriter(Path.Combine(LogFileDir, CreateLogFilePath(LogFileName)), Convert.ToBoolean(LogWriteMode == LogWriteModeType.Append ? true : false), System.Text.Encoding.GetEncoding(Encode)))
+                using (StreamWriter Fs =
+                    new StreamWriter(LogFileFullPath, Convert.ToBoolean(LogWriteMode == LogWriteModeType.Append), Encoding.GetEncoding(Encode)))
                 {
                     System.Diagnostics.Debug.Write(LogString);  // @@TEST for DEBUG
                     Fs.Write(LogString);
-                }
+                    Fs.Close();
 
+                    FileInfo logFile = new FileInfo(LogFileFullPath);
+                    if (LogFileMaxSize < logFile.Length && !isCompressing)
+                    {
+                        isCompressing = true;
+                        try
+                        {
+                            // ログファイルを圧縮する
+                            CompressLogFile();
+                            // 古いログファイルを削除する
+                            CheckOldLogfile();
+                        }
+                        finally
+                        {
+                            isCompressing = false;
+                        }
+                    }
+                }
                 return true;
             }
             catch
@@ -140,45 +175,9 @@ namespace TVmeetLauncher
         {
             return WriteLog(logMsg, LogDefaultLevel);
         }
-        #endregion
+#endregion
 
-
-        #region "古いログファイルの削除"
-        /// <summary>
-        /// 古いログファイルの削除
-        /// </summary>
-        /// <returns></returns>
-        public bool CheckOldLogfile()
-        {
-            try
-            {
-                // ディレクトリが無ければ正常終了
-                if (!Directory.Exists(LogFileDir))
-                    return true;
-
-                DirectoryInfo dyInfo = new DirectoryInfo(LogFileDir);
-                // フォルダのファイルを取得
-                var target = DateTime.Today.AddDays(-LogLifeSpan);
-                foreach (FileInfo fInfo in dyInfo.GetFiles())
-                {
-                    // 日付の比較
-                    if (fInfo.LastWriteTime < target)
-                    {
-                        fInfo.Delete();
-                    }
-                }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        #endregion
-        #endregion
-
-        #region "内部メソッド"
-        #region "ログ出力文字列作成"
+#region "内部メソッド"
         /// <summary>
         /// ログ出力文字列作成
         /// </summary>
@@ -192,9 +191,6 @@ namespace TVmeetLauncher
             string logString = string.Format(logTemplate, logMsg);
             return logString;
         }
-        #endregion
-
-        #region "ログファイルパス設定"
         /// <summary>
         /// ログファイルパス設定
         /// </summary>
@@ -215,10 +211,75 @@ namespace TVmeetLauncher
                 case LogFormatFileNameType.None:
                     break;
             }
-
             return logFileName + ".log";
         }
-        #endregion
-        #endregion
+        /// <summary>
+        /// ログファイルを圧縮する
+        /// </summary>
+        private void CompressLogFile()
+        {
+            // 圧縮ファイル用ディレクトリが無ければ、作成
+            if (!Directory.Exists(LogOldFileDir))
+                Directory.CreateDirectory(LogOldFileDir);
+
+            string oldFilePath = Path.Combine( LogOldFileDir, LogFileName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") );
+            File.Move( LogFileFullPath, oldFilePath + ".log");
+
+            FileStream inStream = new FileStream(oldFilePath + ".log", FileMode.Open, FileAccess.Read);
+            FileStream outStream = new FileStream(oldFilePath + ".gz", FileMode.Create, FileAccess.Write);
+            GZipStream gzStream = new GZipStream(outStream, CompressionMode.Compress);
+
+            int size;
+            byte[] buffer = new byte[LogFileMaxSize + 1000];
+            while (0 < (size = inStream.Read(buffer, 0, buffer.Length)))
+            {
+                gzStream.Write(buffer, 0, size);
+            }
+            
+            inStream.Close();
+            gzStream.Close();
+            outStream.Close();
+
+            WriteLog("Compressed [" + LogFileFullPath + "] as [" + oldFilePath + ".log]", LogLevel.Info);
+
+            File.Delete(oldFilePath + ".log");
+        }
+        /// <summary>
+        /// 古いログファイルの削除
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckOldLogfile()
+        {
+                // ログフォルダのファイルを削除
+                bool resLog = DeleteFiles(LogFileDir);
+                // 圧縮フォルダのファイル削除
+                bool resComp = DeleteFiles(LogOldFileDir);
+
+                return resLog & resComp;
+        }
+        private bool DeleteFiles(string dir)
+        {
+            try
+            {
+                // ディレクトリが無ければ正常終了
+                if (!Directory.Exists(dir))
+                    return true;
+
+                // フォルダ内ファイルを削除
+                DirectoryInfo dyInfo = new DirectoryInfo(dir);
+                var target = DateTime.Today.AddDays(-LogLifeSpan);
+                foreach (FileInfo fInfo in dyInfo.GetFiles())
+                {
+                    if (fInfo.LastWriteTime < target)
+                        fInfo.Delete();
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
+#endregion
 }

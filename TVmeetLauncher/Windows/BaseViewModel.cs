@@ -1,8 +1,8 @@
 ﻿using MaterialDesignThemes.Wpf;
 using Prism.Commands;
 using Prism.Mvvm;
-using System.ComponentModel;
 using System;
+using System.ComponentModel;
 using WIN32API;
 
 namespace TVmeetLauncher

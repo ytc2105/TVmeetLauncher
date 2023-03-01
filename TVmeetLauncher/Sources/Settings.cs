@@ -1,15 +1,12 @@
-﻿using MahApps.Metro.Controls;
+﻿using Sprache;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Interop;
+using System.Windows.Controls;
 using System.Windows.Media;
+
 
 namespace TVmeetLauncher
 {
@@ -103,8 +100,6 @@ namespace TVmeetLauncher
     /// </summary>
     public class MeetAppInfo
     {
-        readonly Logger logger = Logger.GetInstance;
-
         private readonly ConstParams.MeetingApplication _meetApp;
         private readonly string _appName;
         private readonly string _registryPath;
@@ -236,14 +231,15 @@ namespace TVmeetLauncher
             }
             catch (Exception e)
             {
-                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Error);
+                Logger.GetInstance.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + 
+                    System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Error);
             }
 
             return ret;
         }
 
         private int _processID = -1;
-        private IntPtr _hWnd = IntPtr.Zero; //@@TEST
+        private IntPtr _hWnd = IntPtr.Zero;
         private string _iconPath;
         private string _exePath;
         private string _exeArgs;
@@ -294,6 +290,28 @@ namespace TVmeetLauncher
                 return desciptionString;
             }
             return value.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 拡張Buttonコントロール
+    /// ・会議アプリ情報プロパティ追加
+    /// </summary>
+    public class ButtonEx : Button
+    {
+        static ButtonEx()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ButtonEx), new FrameworkPropertyMetadata(typeof(ButtonEx)));
+        }
+
+        private MeetAppInfo _appInfo;
+        /// <summary>
+        /// 会議アプリクラスプロパティ
+        /// </summary>
+        public MeetAppInfo AppInfo
+        {
+            get { return _appInfo; }
+            set { _appInfo = value; }
         }
     }
 }

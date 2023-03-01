@@ -9,13 +9,11 @@ namespace WIN32API
 {
     public static class WinUIAPI
     {
-        //private static readonly int SW_SHOW = 5;
-        //private static readonly int SW_HIDE = 0;
-
+        #region パラメーター
         /// <summary>
         /// ShowWindowコマンド、ウィンドウ状態変更
         /// </summary>
-        public enum SW : uint
+        private enum SW : uint
         {
             SW_HIDE = 0,
             SW_SHOWNORMAL = 1,
@@ -37,7 +35,7 @@ namespace WIN32API
         /// <summary>
         /// Z オーダーで配置されたウィンドウの前にあるウィンドウへのハンドル
         /// </summary>
-        public enum Zhwnd : int
+        private enum Zhwnd : int
         {
             HWND_TOP = 0,
             HWND_BOTTOM = 1,
@@ -48,7 +46,7 @@ namespace WIN32API
         /// <summary>
         /// ウィンドウのサイズと位置のフラグ
         /// </summary>
-        public enum SWPos : uint
+        private enum SWPos : uint
         {
             SWP_DRAWFRAME = 0x0020,
             SWP_FRAMECHANGED = 0x0020,
@@ -79,7 +77,7 @@ namespace WIN32API
         /// ・ABM_WINDOWPOSCHANGED---AppBarの位置が変更されたことをシステムに通知する
         /// pData： TAppBarData構造体（各フィールドはdwMessageに依存する） 
         /// </summary>
-        public enum ABMsg : int
+        private enum ABMsg : int
         {
             ABM_NEW = 0,
             ABM_REMOVE = 1,
@@ -108,7 +106,7 @@ namespace WIN32API
         /// lParam.....メッセージ依存のパラメータ（ABM_SETAUTOHIDEBARメッセージと共に使用される）
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct APPBARDATA
+        private struct APPBARDATA
         {
             public int cbSize;
             public IntPtr hWnd;
@@ -121,7 +119,7 @@ namespace WIN32API
         /// <summary>
         /// ABEdge
         /// </summary>
-        public enum ABEdge : int
+        private enum ABEdge : int
         {
             ABE_LEFT = 0,
             ABE_TOP = 1,
@@ -132,7 +130,7 @@ namespace WIN32API
         /// <summary>
         /// ABState
         /// </summary>
-        enum ABState : int
+        private enum ABState : int
         {
             ABS_MANUAL = 0,
             ABS_AUTOHIDE = 1,
@@ -144,46 +142,42 @@ namespace WIN32API
         /// RECT
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        private struct RECT
         {
             public int left;
             public int top;
             public int right;
             public int bottom;
         }
+        #endregion
 
+        #region ウィンドウ表示/非表示関連
         [DllImport("USER32.DLL")]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
         [DllImport("USER32.DLL")]
         private static extern IntPtr ShowWindow(IntPtr hWnd, uint nCmdShow);
-
         [DllImport("USER32.DLL")]
         private static extern bool IsWindowVisible(IntPtr hWnd);
-
-        [DllImport("USER32.DLL")]
-        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
-
         [DllImport("USER32.DLL")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
-
         [DllImport("SHELL32.DLL")]
-        public static extern int SHAppBarMessage(ABMsg dwMessage, ref APPBARDATA pData);
+        private static extern int SHAppBarMessage(ABMsg dwMessage, ref APPBARDATA pData);
 
-        private static readonly IntPtr taskBarHwnd = FindWindow("Shell_TrayWnd", null);
+        public static readonly IntPtr taskBarHwnd = FindWindow("Shell_TrayWnd", null);
         private static readonly IntPtr startMenuHwnd = FindWindow("Windows.UI.Core.CoreWindow", "スタート");
+
+        //@@TEST
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+        private const int WM_SETREDRAW = 0x000B;
 
         /// <summary>
         /// タスクバーを非表示にする
         /// </summary>
         public static void TskBarHide()
         {
-            SetWindowPos(taskBarHwnd, (IntPtr)Zhwnd.HWND_BOTTOM, 0, 0, 0, 0,
-                (uint)(SWPos.SWP_HIDEWINDOW));
+            ShowWindow(taskBarHwnd, (uint)SW.SW_HIDE);
             ShowWindow(startMenuHwnd, (uint)SW.SW_HIDE);
-
-            //StringBuilder startMenuName = new StringBuilder(1024);
-            //int res = GetClassName(startMenuHwnd, startMenuName, startMenuName.Capacity);
         }
         /// <summary>
         /// タスクバーを表示する
@@ -268,8 +262,9 @@ namespace WIN32API
             SetWindowPos(hWnd, (IntPtr)Zhwnd.HWND_TOP, 0, 0, 0, 0, 
                 (uint)SWPos.SWP_NOMOVE | (uint)SWPos.SWP_NOSIZE);
         }
+        #endregion
 
-
+        #region Windowハンドル関連
         private const int GW_HWNDNEXT = 2;
         [DllImport("USER32.DLL")]
         private extern static IntPtr GetParent(IntPtr hwnd);
@@ -278,7 +273,11 @@ namespace WIN32API
         [DllImport("USER32.DLL")]
         private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
-        // プロセスID(pid)をウィンドウハンドル(hwnd)に変換する
+        /// <summary>
+        /// プロセスID(pid)をウィンドウハンドル(hwnd)に変換する
+        /// </summary>
+        /// <param name="pid"></param>
+        /// <returns></returns>
         public static IntPtr GetHwndFromPid(int pid)
         {
             IntPtr hwnd = FindWindow(null, null);
@@ -296,12 +295,74 @@ namespace WIN32API
             return hwnd;
         }
 
-        // ウィンドウハンドル(hwnd)をプロセスID(pid)に変換する
+        /// <summary>
+        /// ウィンドウハンドル(hwnd)をプロセスID(pid)に変換する
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
         public static int GetPidFromHwnd(IntPtr hwnd)
         {
             GetWindowThreadProcessId(hwnd, out int pid);
             return pid;
         }
+        #endregion
+
+        #region ウィンドウ探索関連
+        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+        [DllImport("USER32.DLL")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+        [DllImport("USER32.DLL")]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpWindowText, int nMaxCount);
+        [DllImport("USER32.DLL")]
+        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        /// <summary>
+        /// ウィンドウハンドルからタイトル取得
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        public static string GetTitleFromHwnd(IntPtr hWnd)
+        {
+            StringBuilder sb = new StringBuilder(256);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// ウィンドウハンドルからクラス名取得
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        public static string GetClassNameFromHwnd(IntPtr hWnd)
+        {
+            StringBuilder sb = new StringBuilder(256);
+            GetClassName(hWnd, sb, sb.Capacity);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// タイトルにテキストを含むhWndを取得する
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static List<IntPtr> FindWindowsWithText(string text)
+        {
+            List<IntPtr> windows = new List<IntPtr>();
+            EnumWindows(delegate (IntPtr hWnd, IntPtr lParam)
+            {
+                string title = GetTitleFromHwnd(hWnd);
+                if (title.Contains(text))
+                {
+                    windows.Add(hWnd);
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            return windows;
+        }
+        #endregion
+
     }
 
     public static class Psapi
