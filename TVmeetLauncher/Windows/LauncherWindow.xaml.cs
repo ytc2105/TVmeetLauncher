@@ -44,7 +44,7 @@ namespace TVmeetLauncher
             new MeetAppInfo(ConstParams.MeetingApplication.Zoom,           Microsoft.Win32.RegistryHive.CurrentUser),
             new MeetAppInfo(ConstParams.MeetingApplication.GoogleMeet,     Microsoft.Win32.RegistryHive.CurrentUser),
             new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeams, Microsoft.Win32.RegistryHive.CurrentUser),
-            new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool, Microsoft.Win32.RegistryHive.CurrentUser),
+            //new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool, Microsoft.Win32.RegistryHive.CurrentUser),
         };
 
         public LauncherWindow()
@@ -185,20 +185,43 @@ namespace TVmeetLauncher
                                     exeArgs = "";
                                     break;
                                 case ConstParams.MeetingApplication.MicrosoftTeams:
-                                    iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\msteams.exe";
-                                    exePath = "msteams.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                    // Installed App
+                                    if (appkey.GetValue("DisplayIcon") != null)
+                                    {
+                                        // Icon
+                                        iconPath = appkey.GetValue("DisplayIcon").ToString();
+                                        // exe
+                                        exePath = appkey.GetValue("InstallLocation").ToString();
+                                        exePath += @"\current\Teams.exe";
+                                    } // UWP(WindowsStore)app
+                                    else
+                                    {
+                                        iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\msteams.exe";
+                                        exePath = "msteams.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                    }
+
                                     // arguments
                                     exeArgs = "";
                                     break;
-                                case ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool:
-                                    // Icon
-                                    iconPath = appkey.GetValue("DisplayIcon").ToString();
-                                    // exe
-                                    exePath = appkey.GetValue("InstallLocation").ToString();
-                                    exePath += @"\current\Teams.exe";
-                                    // arguments
-                                    exeArgs = "";
-                                    break;
+                                //case ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool:
+                                //    // Installed App
+                                //    if (appkey.GetValue("DisplayIcon") != null)
+                                //    {
+                                //        // Icon
+                                //        iconPath = appkey.GetValue("DisplayIcon").ToString();
+                                //        // exe
+                                //        exePath = appkey.GetValue("InstallLocation").ToString();
+                                //        exePath += @"\current\Teams.exe";
+                                //    } // UWP(WindowsStore)app
+                                //    else
+                                //    {
+                                //        iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\msteams.exe";
+                                //        exePath = "msteams.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                //    }
+
+                                //    // arguments
+                                //    exeArgs = "";
+                                //    break;
                                 case ConstParams.MeetingApplication.Webex:
                                     // Icon
                                     iconPath = appkey.GetValue("InstallLocation").ToString();
