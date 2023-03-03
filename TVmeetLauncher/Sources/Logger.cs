@@ -126,6 +126,11 @@ namespace TVmeetLauncher
             if(!IsLogging)
                 return true;
 
+#if !DEBUG
+            if (writeLogLevel == LogLevel.Debug)
+                return true;
+#endif
+
             try
             {
                 // ログ出力文字列作成

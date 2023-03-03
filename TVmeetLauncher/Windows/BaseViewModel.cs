@@ -11,9 +11,7 @@ namespace TVmeetLauncher
     {
         public static BaseViewModel Instance { get; } = new BaseViewModel();
 
-        /// <summary>
-        /// 共通
-        /// </summary>
+        #region 共通
         private int _headlineFontSize = 20;
         private int _subtitleFontSize = 14;
         private int _captionFontSize = 12;
@@ -44,9 +42,11 @@ namespace TVmeetLauncher
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionFontSize)));
             }
         }
+        #endregion
 
+        #region 背景画面(メイン)
         /// <summary>
-        /// 背景画面―ロゴ類
+        /// ロゴ類
         /// </summary>
         private int _tvLogoHeight = 60;
         private int _tvLogoWidth = 150;
@@ -91,52 +91,21 @@ namespace TVmeetLauncher
         }
 
         /// <summary>
-        /// アプリ画面―タイトルバー
+        /// ロゴ可視ステータス
         /// </summary>
-        private int _titleBarIconSize = 20;
-        private int _titleBarHeight = 32;
-        private int _titleBarFontSize = 12;
-        private int _titlePopupSize = 24;
-        public int TitleBarIconSize
+        private string _componentsVisibility = "Hidden";
+        public string ComponntsVisibility
         {
-            get => _titleBarIconSize;
+            get => _componentsVisibility;
             set
             {
-                _titleBarIconSize = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarIconSize)));
+                _componentsVisibility = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponntsVisibility)));
             }
         }
-        public int TitleBarHeight
-        {
-            get => _titleBarHeight;
-            set
-            {
-                _titleBarHeight = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarHeight)));
-            }
-        }
-        public int TitleBarFontSize
-        {
-            get => _titleBarFontSize;
-            set
-            {
-                _titleBarFontSize = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarFontSize)));
-            }
-        }
-        public int TitlePopupSize
-        {
-            get => _titlePopupSize;
-            set
-            {
-                _titlePopupSize = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitlePopupSize)));
-            }
-        }
+        #endregion
 
-        /// <summary>
-        /// スプラッシュ画面
-        /// </summary>
+        #region スプラッシュ画面
         private int _splashScreenHeight = 480;
         private int _splashScreenWidth = 800;
         private int _splashLogoHeight = 90;
@@ -218,7 +187,94 @@ namespace TVmeetLauncher
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_splashProgressBarWidth)));
             }
         }
+        #endregion
 
+        #region ランチャ画面
+        /// <summary>
+        /// タイトルバー
+        /// </summary>
+        private int _titleBarIconSize = 20;
+        private int _titleBarHeight = 32;
+        private int _titleBarFontSize = 12;
+        private int _titlePopupSize = 24;
+        public int TitleBarIconSize
+        {
+            get => _titleBarIconSize;
+            set
+            {
+                _titleBarIconSize = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarIconSize)));
+            }
+        }
+        public int TitleBarHeight
+        {
+            get => _titleBarHeight;
+            set
+            {
+                _titleBarHeight = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarHeight)));
+            }
+        }
+        public int TitleBarFontSize
+        {
+            get => _titleBarFontSize;
+            set
+            {
+                _titleBarFontSize = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleBarFontSize)));
+            }
+        }
+        public int TitlePopupSize
+        {
+            get => _titlePopupSize;
+            set
+            {
+                _titlePopupSize = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitlePopupSize)));
+            }
+        }
+
+        /// <summary>
+        /// ウィンドウサイズ
+        /// </summary>
+        private int _launcherHeight = 480;
+        private int _launcherWidth = 720;
+        public int LauncherHeight
+        {
+            get => _launcherHeight;
+            set
+            {
+                _launcherHeight = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LauncherHeight)));
+            }
+        }
+        public int LauncherWidth
+        {
+            get => _launcherWidth;
+            set
+            {
+                _launcherWidth = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LauncherWidth)));
+            }
+        }
+
+
+        /// <summary>
+        /// 準備完了フラグ
+        /// </summary>
+        private bool _isLauncherReady = false;
+        public bool IsLauncherReady
+        {
+            get => _isLauncherReady;
+            set
+            {
+                _isLauncherReady = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLauncherReady)));
+            }
+        }
+        #endregion
+
+        #region ダイアログ画面
         /// <summary>
         /// ダイアログ画面
         /// </summary>
@@ -242,45 +298,18 @@ namespace TVmeetLauncher
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DialogCheckBoxSize)));
             }
         }
-
-        /// <summary>
-        /// メイン画面ロゴ可視ステータス
-        /// </summary>
-        private string _componentsVisibility = "Hidden";
-        public string ComponntsVisibility
-        {
-            get => _componentsVisibility;
-            set
-            {
-                _componentsVisibility = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponntsVisibility)));
-            }
-        }
-
-        /// <summary>
-        /// ランチャ画面準備完了フラグ
-        /// </summary>
-        private bool _isLauncherReady = false;
-        public bool IsLauncherReady
-        {
-            get => _isLauncherReady;
-            set
-            {
-                _isLauncherReady = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLauncherReady)));
-            }
-        }
+        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        //ウィンドウを閉じる用Action
-        public Action CloseWindowAction { get; set; }
     }
 
     public class CommandViewModel : BindableBase
     {
         private static readonly CommandViewModel _instance = new CommandViewModel();
         public static CommandViewModel Instance { get => _instance; }
+
+        //ウィンドウを閉じる用Action
+        public Action CloseWindowAction { get; set; }
 
         private bool _isDialogOpen = false;
         public bool IsDialogOpen
@@ -377,7 +406,7 @@ namespace TVmeetLauncher
                 if ((string)result == "終了する")
                 {
                     _isTaskBarPollingRun = false;
-                    BaseViewModel.Instance.CloseWindowAction();
+                    CloseWindowAction();
                 }
             }
         }
@@ -407,6 +436,17 @@ namespace TVmeetLauncher
         private void AutoHideTaskbar(object parameter)
         {
             WinUIAPI.TskBarAutoHide((bool)parameter);
+        }
+
+        // 強制終了コマンド
+        private DelegateCommand<object> _forceCloseCommand;
+        public DelegateCommand<object> ForceCloseCommand =>
+            _forceCloseCommand ?? (_forceCloseCommand = new DelegateCommand<object>(ForceClose));
+        // 強制終了処理
+        private void ForceClose(object parameter) 
+        {
+            _isTaskBarPollingRun = false;
+            CloseWindowAction();
         }
     }
 }

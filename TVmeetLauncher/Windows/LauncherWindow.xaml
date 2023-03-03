@@ -11,7 +11,8 @@
         DataContext="{x:Static local:BaseViewModel.Instance}"
         Style="{StaticResource Window_Common}"
 
-        Title="テレビ会議システム" Height="480" Width="720" MinHeight="480" MinWidth="720"
+        Title="テレビ会議システム" Height="480" Width="720" 
+        MinHeight="{Binding LauncherHeight}" MinWidth="{Binding LauncherWidth}"
         TitleForeground="AliceBlue" TitleCharacterCasing="Normal" TitleBarHeight="{Binding TitleBarHeight}"
         WindowTitleBrush="#004098" NonActiveWindowTitleBrush="#6fb6c9"
         WindowState="Normal" IgnoreTaskbarOnMaximize="false" Topmost="False"

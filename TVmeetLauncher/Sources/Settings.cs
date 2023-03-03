@@ -26,6 +26,8 @@ namespace TVmeetLauncher
             Zoom,
             [Description("Microsoft Teams")]
             MicrosoftTeams,
+            [Description("Microsoft Teams")]
+            MicrosoftTeamsWorkOrSchool,
             [Description("Webex")]
             Webex,
             [Description("Skype")]
@@ -149,8 +151,8 @@ namespace TVmeetLauncher
                 Microsoft.Win32.RegistryKey x86BaseKey = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32);
                 Microsoft.Win32.RegistryKey WinStoreBaseKey = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.CurrentUser, Microsoft.Win32.RegistryView.Registry64);
 
-                // Windows Store HKCU, for Skype
-                if (meetApp == ConstParams.MeetingApplication.Skype)
+                // Windows Store HKCU, for UWP apps (Skype & Microsoft Teams)
+                if (meetApp == ConstParams.MeetingApplication.Skype || meetApp == ConstParams.MeetingApplication.MicrosoftTeams)
                 {
                     uninstall_path = @"SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages";
                     using (Microsoft.Win32.RegistryKey uninstall = WinStoreBaseKey.OpenSubKey(uninstall_path, false))
@@ -176,7 +178,7 @@ namespace TVmeetLauncher
                         }
                     }
                 }
-                // 64bit, for except Skype or case of can't find Skype at previous key
+                // 64bit, for except Skype "AND" case of can't find Skype at previous key
                 if( ret == null)
                 {
                     uninstall_path = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -240,9 +242,9 @@ namespace TVmeetLauncher
 
         private int _processID = -1;
         private IntPtr _hWnd = IntPtr.Zero;
-        private string _iconPath;
-        private string _exePath;
-        private string _exeArgs;
+        private string _iconPath = null;
+        private string _exePath = null;
+        private string _exeArgs = null;
         public int ProcessID
         {
             get { return _processID; }

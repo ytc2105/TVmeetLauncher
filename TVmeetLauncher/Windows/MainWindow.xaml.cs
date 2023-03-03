@@ -16,12 +16,12 @@ namespace TVmeetLauncher
         public MainWindow()
         {
             // モニタ解像度取得
-            var rect = new System.Drawing.Rectangle((int)this.Left, (int)this.Top, (int)this.Width, (int)this.Height);
+            var rect = new System.Drawing.Rectangle((int)Left, (int)Top, (int)Width, (int)Height);
             var screen = System.Windows.Forms.Screen.FromRectangle(rect);
             int width = screen.Bounds.Width;
             //aint height = screen.Bounds.Height;
             ConstParams.ResolWidth = width;
-            Logger.GetInstance.WriteLog("Start TVmeetLauncher.");
+            Logger.GetInstance.WriteLog("Start \"TV Meeting Launcher\".");
 
             InitializeComponent();
             WinUIAPI.TskBarHide();
@@ -40,19 +40,21 @@ namespace TVmeetLauncher
                 double value = (double)(int)propertyInfo.GetValue(BaseViewModel.Instance);
                 propertyInfo.SetValue(BaseViewModel.Instance, (int)(value * ConstParams.ViewScale));
             }
-            //メイン画面ロゴ表示
+            // メイン画面ロゴ表示
             BaseViewModel.Instance.ComponntsVisibility = "Visible";
-            // 画面描画
-            LauncherWindow launcherWindow = new LauncherWindow();
+            // ランチャウィンドウ生成
+            //LauncherWindow launcherWindow = new LauncherWindow();
 #if !DEBUG
+            // スプラッシュスクリーン表示
             SplashScreen splashScreen = new SplashScreen();
             splashScreen.ShowDialog();
 #endif
-            launcherWindow.Show();
+            // ランチャ画面描画
+            //launcherWindow.Show();
             // ランチャ画面を閉じたらメイン画面も閉じる
-            launcherWindow.Closed += new EventHandler(this.CloseEvent);
+            splashScreen.launcherWindow.Closed += new EventHandler(CloseEvent);
             // ランチャ画面の終了処理を、終了ボタン押下時のアクションコマンドへ追加
-            BaseViewModel.Instance.CloseWindowAction = new Action(launcherWindow.Close);
+            CommandViewModel.Instance.CloseWindowAction = new Action(splashScreen.launcherWindow.Close);
         }
 
         private void MetroWindow_Closing(object sender, CancelEventArgs e)
@@ -60,7 +62,7 @@ namespace TVmeetLauncher
             CommandViewModel.Instance.IsTaskBarPollingRun = false;
             WinUIAPI.TskBarDisp();
             WinUIAPI.TskBarAutoHide(false);
-            Logger.GetInstance.WriteLog("Exit TVmeetLauncher.");
+            Logger.GetInstance.WriteLog("Exit \"TV Meeting Launcher\".");
         }
 
         private void MetroWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -76,7 +78,7 @@ namespace TVmeetLauncher
 
         private void CloseEvent(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }

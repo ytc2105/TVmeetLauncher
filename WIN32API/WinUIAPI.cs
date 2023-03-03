@@ -166,11 +166,6 @@ namespace WIN32API
         public static readonly IntPtr taskBarHwnd = FindWindow("Shell_TrayWnd", null);
         private static readonly IntPtr startMenuHwnd = FindWindow("Windows.UI.Core.CoreWindow", "スタート");
 
-        //@@TEST
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
-        private const int WM_SETREDRAW = 0x000B;
-
         /// <summary>
         /// タスクバーを非表示にする
         /// </summary>

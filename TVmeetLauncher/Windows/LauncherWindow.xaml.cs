@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +44,7 @@ namespace TVmeetLauncher
             new MeetAppInfo(ConstParams.MeetingApplication.Zoom,           Microsoft.Win32.RegistryHive.CurrentUser),
             new MeetAppInfo(ConstParams.MeetingApplication.GoogleMeet,     Microsoft.Win32.RegistryHive.CurrentUser),
             new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeams, Microsoft.Win32.RegistryHive.CurrentUser),
+            new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool, Microsoft.Win32.RegistryHive.CurrentUser),
         };
 
         public LauncherWindow()
@@ -104,17 +106,32 @@ namespace TVmeetLauncher
                     Grid.SetColumn(app, column++);
                     Grid.SetRow(app, row);
                 }
-                logger.WriteLog(string.Format("Setting Complete, Apps Count {0}.", appCnt));
-                this.MinHeight *= ConstParams.ViewScale; this.MinWidth *= ConstParams.ViewScale;
-
+                if (appCnt == 0)
+                {
+                    logger.WriteLog($"Apps Count {appCnt}, Can't find any Meeting Application.", Logger.LogLevel.Error);
+                    AddCloseToContentRenderedEvent("ミーティングアプリケーションが見つかりませんでした。\nテレビ会議システムを終了します。", "異常終了");
+                }
+                else 
+                {
+                    logger.WriteLog(string.Format("Setting Complete, Apps Count {0}.", appCnt));
+                    Task.Run(() => TaskBarPolling()); //@@TEST POLLING
+                }
                 BaseViewModel.Instance.IsLauncherReady = true;
-                Task.Run(() => TaskBarPolling()); //@@TEST POLLING
             }
             catch (Exception e)
             {
-                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Fatal);  
-                throw e; //@@TEST 例外再スロー、App.xaml.csでキャッチして強制終了
+                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Fatal);
+                AddCloseToContentRenderedEvent($"申し訳ありません。\nアプリケーション起動中に異常を検知したため\nテレビ会議システムを終了します。\n\n--異常メッセージ--\n{e?.Message}", "異常終了");
             }
+        }
+
+        private void AddCloseToContentRenderedEvent(string msg, string title)
+        {
+            ContentRendered += (s, e) =>
+            {
+                MessageBox.Show(msg, title);
+                Close();
+            };
         }
 
         /// <summary>
@@ -129,13 +146,20 @@ namespace TVmeetLauncher
             string appName                          = meet.AppName;
             string registryPath                     = meet.RegistryPath;
             Microsoft.Win32.RegistryHive hkey       = meet.Hkey;
-
-            logger.WriteLog(string.Format("Setting the Application | appName:{0}, registryPath:{1}, hkey:{2}", appName, registryPath, hkey));
+            
+            bool isReSetup = false;
+            if (meet.ExePath != null)
+                isReSetup = true;
 
             try
             {
                 if (registryPath != null)
                 {
+                    if (!isReSetup)
+                        logger.WriteLog(string.Format("Setting the Application | appName:{0}, registryPath:{1}, hkey:{2}", appName, registryPath, hkey));
+                    else
+                        logger.WriteLog(string.Format("ReSetting the Application | appName:{0}, registryPath:{1}, hkey:{2}", appName, registryPath, hkey));
+
                     using (Microsoft.Win32.RegistryKey appkey = Microsoft.Win32.RegistryKey.OpenBaseKey(hkey, Microsoft.Win32.RegistryView.Registry64).OpenSubKey(registryPath, false))
                     {
                         if (appkey != null)
@@ -161,6 +185,12 @@ namespace TVmeetLauncher
                                     exeArgs = "";
                                     break;
                                 case ConstParams.MeetingApplication.MicrosoftTeams:
+                                    iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\msteams.exe";
+                                    exePath = "msteams.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                    // arguments
+                                    exeArgs = "";
+                                    break;
+                                case ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool:
                                     // Icon
                                     iconPath = appkey.GetValue("DisplayIcon").ToString();
                                     // exe
@@ -186,30 +216,32 @@ namespace TVmeetLauncher
                                     } // UWP(WindowsStore)app
                                     else {
                                         iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\Skype\Skype.exe";
-                                        exePath = "skype.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
+                                        exePath = "Skype.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
                                     }
 
                                     // arguments
                                     exeArgs = "";
                                     break;
                                 default:
-                                    logger.WriteLog("Setting Invalid Application: " + appName + " |Registry: " + registryPath + " |HKEY: " + hkey.ToString());
+                                    logger.WriteLog("Setting Invalid Application: " + appName + " |Registry: " + registryPath + " |HKEY: " + hkey.ToString(), Logger.LogLevel.Warn);
                                     return;
                             }
                             meet.IconPath = iconPath;
                             meet.ExePath = exePath;
                             meet.ExeArgs = exeArgs;
-                            SetAppContent(meet);
+                            if(!isReSetup)
+                                SetAppContent(meet);
                         }
                         else
                         {
-                            logger.WriteLog("Can't find Registry key: " + appName + " |Registry: " + registryPath + " |HKEY: " + hkey.ToString());
+                            logger.WriteLog("Can't find Registry key: " + appName + " |Registry: " + registryPath + " |HKEY: " + hkey.ToString(), Logger.LogLevel.Warn);
                         }
                     }
 
                 }
                 else
                 {
+                    logger.WriteLog(string.Format("Can't find Meeting Application | appName:{0}, registryPath:{1}, hkey:{2}", appName, registryPath, hkey), Logger.LogLevel.Warn);
 #if PWA
                     //@@TEST Google MeetのURLをPWAで開くための処理　※アイコン取得が困難な為，未実装
                     if (meetApp == ConstParams.MeetingApplication.GoogleMeet)
@@ -298,48 +330,55 @@ namespace TVmeetLauncher
                     exeArgs     = meet.ExeArgs;
             logger.WriteLog(String.Format("Setting the Content | appName:{0}, iconPath:{1}, exePath:{2}, exeArgs:{3}", appName, iconPath, exePath, exeArgs));
 
-            /// Set App Icon Image
-            Image image = new Image
+            try
             {
-                Name = "img" + appName.Replace(" ", String.Empty),
-                Height = ConstParams.iconHeight * ConstParams.ViewScale,
-                Width = ConstParams.iconWidth * ConstParams.ViewScale,
-            };
-            if ( !System.IO.Path.IsPathRooted(iconPath) )
-                image.Source = new BitmapImage(new Uri(iconPath, UriKind.Relative));
-            else
-                image.Source = GetImageSourceFromAPI(iconPath);
+                /// Set App Icon Image
+                Image image = new Image
+                {
+                    Name = "img" + appName.Replace(" ", String.Empty),
+                    Height = ConstParams.iconHeight * ConstParams.ViewScale,
+                    Width = ConstParams.iconWidth * ConstParams.ViewScale,
+                };
+                if (!System.IO.Path.IsPathRooted(iconPath))
+                    image.Source = new BitmapImage(new Uri(iconPath, UriKind.Relative));
+                else
+                    image.Source = GetImageSourceFromAPI(iconPath);
 
-            /// Set App Button
-            ButtonEx button = new ButtonEx
+                /// Set App Button
+                ButtonEx button = new ButtonEx
+                {
+                    Name = "btn" + appName.Replace(" ", String.Empty),
+                    Height = (ConstParams.iconHeight + ConstParams.buttonMargin) * ConstParams.ViewScale,
+                    Width = (ConstParams.iconWidth + ConstParams.buttonMargin) * ConstParams.ViewScale,
+                    Cursor = Cursors.Hand,
+                    ToolTip = appName + " を起動",
+                    //Background = new SolidColorBrush(Colors.Transparent),
+                    //BorderBrush = new SolidColorBrush(Colors.Transparent),
+                    Style = this.FindResource("MaterialDesignFlatButton") as Style,
+                };
+                ButtonAssist.SetCornerRadius(button, new CornerRadius(25.0f));
+
+                TextBlock toolTipText = new TextBlock
+                {
+                    Text = button.ToolTip.ToString(),
+                    FontFamily = new FontFamily("UD新ゴNT Pro"),
+                    FontSize = BaseViewModel.Instance.CaptionFontSize,
+                };
+
+                ToolTipService.SetInitialShowDelay(button, 1);
+                ToolTipService.SetToolTip(button, toolTipText);
+
+                button.Content = image;
+                button.AppInfo = meet;
+
+                button.Click += new RoutedEventHandler(ProcStartApp);
+
+                appsGrid.Children.Add(button);
+            }
+            catch (Exception e)
             {
-                Name = "btn" + appName.Replace(" ", String.Empty),
-                Height = (ConstParams.iconHeight + ConstParams.buttonMargin) * ConstParams.ViewScale,
-                Width = (ConstParams.iconWidth + ConstParams.buttonMargin) * ConstParams.ViewScale,
-                Cursor = Cursors.Hand,
-                ToolTip = appName + " を起動",
-                //Background = new SolidColorBrush(Colors.Transparent),
-                //BorderBrush = new SolidColorBrush(Colors.Transparent),
-                Style = this.FindResource("MaterialDesignFlatButton") as Style,
-            };
-            ButtonAssist.SetCornerRadius(button, new CornerRadius(25.0f));
-
-            TextBlock toolTipText = new TextBlock
-            {
-                Text = button.ToolTip.ToString(),
-                FontFamily = new FontFamily("UD新ゴNT Pro"),
-                FontSize = (int)(12 * ConstParams.ViewScale),
-            };
-
-            ToolTipService.SetInitialShowDelay(button, 1);
-            ToolTipService.SetToolTip(button, toolTipText);
-
-            button.Content = image;
-            button.AppInfo = meet;
-
-            button.Click += new RoutedEventHandler(ProcStartApp);
-
-            appsGrid.Children.Add(button);
+                logger.WriteLog("Exception throw from [" + e.TargetSite.Name + "] at [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + e.Message, Logger.LogLevel.Error);
+            }
         }
 
         /// <summary>
@@ -367,11 +406,14 @@ namespace TVmeetLauncher
                     try
                     {
                         p.Start();
-                        logger.WriteLog("Start Application: " + p.ProcessName + ", | Title:" + p.MainWindowTitle + " | ID:" + p.Id);
+                        logger.WriteLog($"Start Application:{p.ProcessName}, | Title:{p.MainWindowTitle}, | ID:{p.Id}"
+                             + $".|| ExePath=[{meet.ExePath}], | Arg=[{meet.ExeArgs}]");
                     }
                     catch (Exception ex)
                     {
                         logger.WriteLog("Exception error occured: [" + System.Reflection.MethodBase.GetCurrentMethod().Name + "]. | " + ex.Message, Logger.LogLevel.Error);
+                        // アップデート後はパスが変わることがある為、再設定
+                        SetMeetApps(meet);
                     }
                 }
             }
