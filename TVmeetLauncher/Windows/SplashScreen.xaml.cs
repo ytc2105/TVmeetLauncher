@@ -11,7 +11,7 @@ namespace TVmeetLauncher
     public partial class SplashScreen : Window
     {
 
-        public LauncherWindow launcherWindow;
+        //public LauncherWindow launcherWindow;
         private bool IsClosed = false;
 
         public SplashScreen()
@@ -28,7 +28,7 @@ namespace TVmeetLauncher
             worker.ProgressChanged += Worker_ProgressChanged;
             worker.RunWorkerAsync();
             // プログレス非同期表示後にランチャウィンドウ生成
-            launcherWindow = new LauncherWindow();
+            //launcherWindow = new LauncherWindow();
         }
 
         void Worker_DoWork(object sender, DoWorkEventArgs e)
@@ -54,7 +54,7 @@ namespace TVmeetLauncher
             // 進捗100% & ランチャ準備完了
             if (e.ProgressPercentage == 100 && BaseViewModel.Instance.IsLauncherReady)
             {
-                launcherWindow.Show();
+                //launcherWindow.Show();
                 Close();
             }
             // タイムアウトで強制終了

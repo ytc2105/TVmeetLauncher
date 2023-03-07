@@ -8,12 +8,12 @@ using System.Windows;
 // アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
 [assembly: AssemblyTitle("Smabri")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("エレコムのテレビ会議システム")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Smabri")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("ELECOM")]
+[assembly: AssemblyProduct("Smabri™")]
+[assembly: AssemblyCopyright("Copyright © ELECOM 2023")]
+[assembly: AssemblyTrademark("Smabri™はエレコム株式会社の登録予定商標です。")]
 [assembly: AssemblyCulture("")]
 
 // ComVisible を false に設定すると、このアセンブリ内の型は COM コンポーネントから
@@ -53,3 +53,5 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: Guid("C6CEF670-7D2B-4BA6-879D-4DC5CEB56FF6")]
+[assembly: NeutralResourcesLanguage("ja-JP")]

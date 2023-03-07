@@ -5,21 +5,21 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TVmeetLauncher"
-             DataContext="{x:Static local:CommandViewModel.Instance}"
+             DataContext="{x:Static local:BaseViewModel.Instance}"
              mc:Ignorable="d"
              d:DesignHeight="200.847"  d:DesignWidth="371.333" 
              
              FontFamily="UD新ゴNT Pro">
 
-    <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" Background="AliceBlue" BorderBrush="LightGray">
+    <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" 
+                         Background="AliceBlue" BorderBrush="LightGray">
         <Grid Margin="16" ShowGridLines="False">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
             <StackPanel Margin="16" Grid.Row="0" Orientation="Vertical">
-                <TextBlock Text="テレビ会議システムを終了しますか?" 
-                           FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=SubtitleFontSize}"/>
+                <TextBlock Text="テレビ会議システムを終了しますか?" FontSize="{Binding SubtitleFontSize}"/>
             </StackPanel>
             <StackPanel Grid.Row="1" Margin="16" HorizontalAlignment="Right" Orientation="Horizontal">
 
@@ -30,8 +30,8 @@
                     IsCancel="True"
                     Style="{StaticResource MaterialDesignRaisedDarkButton}"
                     materialDesign:ButtonAssist.CornerRadius="5" 
-                    Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=DialogButtonHeight}"
-                    FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"/>
+                    Height="{Binding DialogButtonHeight}"
+                    FontSize="{Binding CaptionFontSize}"/>
 
                 <Button
                     Margin="8,0,0,0"
@@ -41,8 +41,8 @@
                     IsDefault="True"
                     Style="{StaticResource MaterialDesignFlatDarkButton}"
                     materialDesign:ButtonAssist.CornerRadius="5" 
-                    Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=DialogButtonHeight}"
-                    FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"/>
+                    Height="{Binding DialogButtonHeight}"
+                    FontSize="{Binding CaptionFontSize}"/>
             </StackPanel>
         </Grid>
     </materialDesign:Card>

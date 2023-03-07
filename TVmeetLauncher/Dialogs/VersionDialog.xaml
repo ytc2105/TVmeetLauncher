@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TVmeetLauncher"
-             DataContext="{x:Static local:CommandViewModel.Instance}"
+             DataContext="{x:Static local:BaseViewModel.Instance}"
              mc:Ignorable="d" 
              d:DesignHeight="200.847" d:DesignWidth="317.849" 
              
@@ -19,21 +19,18 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Left">
-
-                <TextBlock Text="バージョン情報" Margin="0"
-                    FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=HeadlineFontSize}"                   
-                    FontWeight="Bold" />
-                <TextBlock Text="テレビ会議システム" Margin="10"
-                            FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"/>
-                <TextBlock Text="バージョン: 0.1.0" Margin="10 0 10 10"
-                            FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"/>
+                <TextBlock Text="バージョン情報" Margin="0" FontSize="{Binding HeadlineFontSize}" FontWeight="Bold"/>
+                <TextBlock Text="{Binding ProductName}" FontFamily="Arial" Margin="10 10 10 0" FontSize="{Binding SubtitleFontSize}"/>
+                <TextBlock Text="{Binding ProductDescription}" Margin="10 0 10 10" FontSize="{Binding SubtitleFontSize}"/>
+                <TextBlock Text="{Binding VersionInfo, StringFormat=バージョン: {0}}" Margin="20 10 10 10" HorizontalAlignment="Left" FontSize="{Binding CaptionFontSize}"/>
+                <TextBlock Text="{Binding Copyright}" Margin="10 10 10 0" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="{Binding CaptionFontSize}"/>
             </StackPanel>
-
-            <StackPanel Grid.Row="1" Margin="0,16,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+ 
+            <StackPanel Grid.Row="1" Margin="0,0,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button
                     Margin="0,0,0,0"
-                    Height="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=DialogButtonHeight}"
-                    FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=CaptionFontSize}"
+                    Height="{Binding DialogButtonHeight}"
+                    FontSize="{Binding CaptionFontSize}"
                     VerticalContentAlignment="Center"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     Content="OK"

@@ -77,12 +77,15 @@ namespace TVmeetLauncher.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("30")]
         public int LOGFILE_PERIOD {
             get {
                 return ((int)(this["LOGFILE_PERIOD"]));
+            }
+            set {
+                this["LOGFILE_PERIOD"] = value;
             }
         }
         

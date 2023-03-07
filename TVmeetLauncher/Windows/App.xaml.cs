@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using WIN32API;
 
 namespace TVmeetLauncher
 {
@@ -14,7 +15,7 @@ namespace TVmeetLauncher
     /// </summary>
     public partial class App : Application
     {
-        const string ApplicationId = "C6CEF670-7D2B-4BA6-879D-4DC5CEB56FF6";
+        static readonly string ApplicationId = AssemblyInfo.Guid; //"C6CEF670-7D2B-4BA6-879D-4DC5CEB56FF6";
         const string HandlerName = "handler";
 
         [STAThread]
@@ -96,8 +97,10 @@ namespace TVmeetLauncher
             Logger.GetInstance.WriteLog($"Handle Exception occured. | {e?.ToString()}", Logger.LogLevel.Fatal);
             
             CommandViewModel.Instance.IsTaskBarPollingRun = false;
-            WinUIAPI.TskBarDisp();
-            WinUIAPI.TskBarAutoHide(false);
+            CommandViewModel.Instance.IsTaskBarHide = false;
+            CommandViewModel.Instance.IsTaskBarAutoHide = false;
+            //WinUIAPI.TskBarDisp();
+            //WinUIAPI.TskBarAutoHide(false);
             Logger.GetInstance.WriteLog($"Terminate \"TV Meeting Launcher\".", Logger.LogLevel.Fatal);
             Environment.Exit(1);
         }

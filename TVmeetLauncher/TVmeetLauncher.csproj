@@ -8,7 +8,7 @@
     <ProjectGuid>{14927CD0-3EB1-40C9-BEA4-E309F731F097}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>TVmeetLauncher</RootNamespace>
-    <AssemblyName>TVmeetLauncher</AssemblyName>
+    <AssemblyName>Smabri</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -33,7 +33,7 @@
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.1.0.%2a</ApplicationVersion>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -90,7 +90,10 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TVmeetLauncher.Program</StartupObject>
+    <StartupObject>TVmeetLauncher.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CalcBinding, Version=2.5.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -145,6 +148,9 @@
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\..\NuGetPackages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.CodeDom, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\..\NuGetPackages\System.CodeDom.7.0.0\lib\net462\System.CodeDom.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -205,6 +211,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\..\NuGetPackages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>

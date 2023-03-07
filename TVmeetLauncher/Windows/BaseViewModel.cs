@@ -13,7 +13,7 @@ namespace TVmeetLauncher
 
         #region 共通
         private int _headlineFontSize = 20;
-        private int _subtitleFontSize = 14;
+        private int _subtitleFontSize = 16;
         private int _captionFontSize = 12;
         public int HeadlineFontSize
         {
@@ -41,6 +41,32 @@ namespace TVmeetLauncher
                 _captionFontSize = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionFontSize)));
             }
+        }
+
+        private string _title = AssemblyInfo.Name;
+        public string Title
+        {
+            get => _title;
+        }
+        private string _productName = AssemblyInfo.Product;
+        public string ProductName
+        {
+            get => _productName;
+        }
+        private string _productDescription = AssemblyInfo.Description;
+        public string ProductDescription
+        {
+            get => _productDescription;
+        }
+        private string _versionInfo = AssemblyInfo.Version;
+        public string VersionInfo
+        {
+            get => _versionInfo;
+        }
+        private string _copyright = AssemblyInfo.Copyright;
+        public string Copyright
+        {
+            get => _copyright;
         }
         #endregion
 
@@ -94,13 +120,13 @@ namespace TVmeetLauncher
         /// ロゴ可視ステータス
         /// </summary>
         private string _componentsVisibility = "Hidden";
-        public string ComponntsVisibility
+        public string ComponentsVisibility
         {
             get => _componentsVisibility;
             set
             {
                 _componentsVisibility = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponntsVisibility)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponentsVisibility)));
             }
         }
         #endregion
@@ -275,9 +301,6 @@ namespace TVmeetLauncher
         #endregion
 
         #region ダイアログ画面
-        /// <summary>
-        /// ダイアログ画面
-        /// </summary>
         private int _dialogButtonHeight = 22;
         private int _dialogCheckBoxSize = 30;
         public int DialogButtonHeight
@@ -325,7 +348,7 @@ namespace TVmeetLauncher
             set { SetProperty(ref _isTaskBarPollingRun, value); }
         }
 
-        private bool _isTaskBarHide = true;
+        private bool _isTaskBarHide = false;
         public bool IsTaskBarHide
         {
             get 
@@ -354,6 +377,20 @@ namespace TVmeetLauncher
                 //SetProperty(ref _isTaskBarAutoHide, value);
                 AutoHideTaskbar(value); 
             }
+        }
+        private string _autoHideVisibility = "Visible";
+        public string AutoHideVisibility
+        {
+            get 
+            {
+                if ( ConstParams.IsWindows11() )
+                    _autoHideVisibility = "Collapsed";
+                else
+                    _autoHideVisibility = "Visible";
+
+                return _autoHideVisibility; 
+            }
+            //set { SetProperty(ref _isAutoHideEnable, value); }
         }
 
         // オプションダイアログ

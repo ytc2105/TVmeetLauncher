@@ -2,7 +2,11 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Management;
 using System.Reflection;
+using System.Resources;
+using System.Runtime.InteropServices;
+using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -95,6 +99,83 @@ namespace TVmeetLauncher
 
             return new Point(1.0, 1.0);
         }
+
+        /// <summary>
+        /// Windows Verisionを取得
+        /// </summary>
+        /// <returns>string:Windows Version</returns>
+        public static string GetWinVer() 
+        {
+            string winVer = null;
+            ManagementClass mc = new ManagementClass("Win32_OperatingSystem");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementBaseObject mo in moc)
+            {
+                winVer = mo["Caption"].ToString();
+                Logger.GetInstance.WriteLog(winVer, Logger.LogLevel.Debug);
+            }
+            moc.Dispose();
+            mc.Dispose();
+
+            return winVer;
+        }
+
+        public static bool IsWindows11()
+        {
+            if ( GetWinVer().Contains("Windows 11") )
+                return true;
+            else
+                return false;
+        }
+    }
+    
+    /// <summary>
+    /// 製品情報格納クラス
+    /// </summary>
+    public static class AssemblyInfo
+    {
+        #region メンバ変数
+        private static readonly Assembly assembly = Assembly.GetExecutingAssembly();
+        private static readonly string  _name    = assembly.GetName().Name;     // アセンブリ名  
+        private static readonly Version _version = assembly.GetName().Version;  // アセンブリバージョン
+        //private static readonly string _title       = assembly.GetCustomAttribute<AssemblyTitleAttribute>().Title;                  // "タイトル"
+        private static readonly string _description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;      // "説明"
+        //private static readonly string _company     = assembly.GetCustomAttribute<AssemblyCompanyAttribute>().Company;              // "会社"
+        private static readonly string _product     = assembly.GetCustomAttribute<AssemblyProductAttribute>().Product;              // "製品"
+        private static readonly string _copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright;          // "著作権"
+        //private static readonly string _trademark   = assembly.GetCustomAttribute<AssemblyTrademarkAttribute>().Trademark;          // "商標"
+        //private static readonly string _language    = assembly.GetCustomAttribute<NeutralResourcesLanguageAttribute>().CultureName; // "ja-JP"
+        private static readonly string _guid = assembly.GetCustomAttribute<GuidAttribute>().Value;                           // "00000000-1111-2222-3333-444444444444"
+        //private static readonly bool   _comVisible  = assembly.GetCustomAttribute<ComVisibleAttribute>().Value;                     // "true"
+        //private static readonly string _fileVersion = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;                       // "3.0.0.0"
+        //private static readonly string _infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion; // "4.0.0.0"
+        #endregion
+
+        /// <summary>
+        /// 製品名(タイトル)
+        /// </summary>
+        public static string Name { get { return _name; } }
+        /// <summary>
+        /// バージョン情報
+        /// </summary>
+        public static string Version { get { return _version.ToString(3); } }
+        /// <summary>
+        /// 製品説明
+        /// </summary>
+        public static string Description { get { return _description; } }
+        /// <summary>
+        /// 製品名(商標マーク付き)
+        /// </summary>
+        public static string Product { get { return _product; } }
+        /// <summary>
+        /// 著作権表示
+        /// </summary>
+        public static string Copyright { get { return _copyright; } }
+        /// <summary>
+        /// アセンブリGUID
+        /// </summary>
+        public static string Guid { get { return _guid; } }
+
     }
 
     /// <summary>
@@ -103,12 +184,12 @@ namespace TVmeetLauncher
     public class MeetAppInfo
     {
         private readonly ConstParams.MeetingApplication _meetApp;
-        private readonly string _appName;
+        private string _appName;
         private readonly string _registryPath;
         private Microsoft.Win32.RegistryHive _hkey;
 
         public ConstParams.MeetingApplication MeetApp { get { return _meetApp; } }
-        public string AppName { get { return _appName; } }
+        public string AppName { get { return _appName; } set { _appName = value; } }
         public string RegistryPath { get { return _registryPath; } }
         public Microsoft.Win32.RegistryHive Hkey { get { return _hkey; } }
 
@@ -179,7 +260,7 @@ namespace TVmeetLauncher
                     }
                 }
                 // 64bit, for except Skype "AND" case of can't find Skype at previous key
-                if( ret == null)
+                if ( ret == null)
                 {
                     uninstall_path = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
                     using (Microsoft.Win32.RegistryKey uninstall = x64BaseKey.OpenSubKey(uninstall_path, false))

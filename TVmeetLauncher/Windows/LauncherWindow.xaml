@@ -11,7 +11,7 @@
         DataContext="{x:Static local:BaseViewModel.Instance}"
         Style="{StaticResource Window_Common}"
 
-        Title="テレビ会議システム" Height="480" Width="720" 
+        Title="{Binding ProductDescription}" Height="480" Width="720"
         MinHeight="{Binding LauncherHeight}" MinWidth="{Binding LauncherWidth}"
         TitleForeground="AliceBlue" TitleCharacterCasing="Normal" TitleBarHeight="{Binding TitleBarHeight}"
         WindowTitleBrush="#004098" NonActiveWindowTitleBrush="#6fb6c9"
@@ -31,13 +31,19 @@
 
     <mah:MetroWindow.TitleTemplate>
         <DataTemplate>
-            <TextBlock Name="titleBarText" Text="{TemplateBinding Content}"
-                   TextTrimming="CharacterEllipsis"
-                   VerticalAlignment="Center"
-                   Margin="3 3 0 0"
-                   FontWeight="Regular"
-                   FontSize="{Binding Source={x:Static local:BaseViewModel.Instance}, Path=TitleBarFontSize}"
-                   FontFamily="UD新ゴNT Pro" />
+            <TextBlock DataContext="{x:Static local:BaseViewModel.Instance}" 
+                       Name="titleBarText" 
+                       TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Center"
+                       Margin="3 3 0 0"
+                       FontWeight="Regular"
+                       FontSize="{Binding TitleBarFontSize}"
+                       FontFamily="UD新ゴNT Pro">
+                    <Run Text="{TemplateBinding Content}"/>
+                    <!--Run Text="{Binding Title, Mode=OneWay}"/-->
+                    <!--Run Text=":"/-->
+                    <!--Run Text="{Binding ProductDescription, Mode=OneWay}"/-->
+            </TextBlock>
         </DataTemplate>
     </mah:MetroWindow.TitleTemplate>
 

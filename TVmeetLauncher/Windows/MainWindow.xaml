@@ -32,12 +32,12 @@
         <Image Source="/Images/logo/smabri_logo.png" Grid.Column="0" Grid.Row="0" 
                Height="{Binding TVlogoHeight}" Width="{Binding TVlogoWidth}" 
                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,15,0,0"
-               Visibility="{Binding ComponntsVisibility}"/>
+               Visibility="{Binding ComponentsVisibility}"/>
         <Image Source="/Images/logo/logo-base-wh.png" 
                Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="3"
                Height="{Binding EleLogoHeight}" Width="{Binding EleLogoWidth}"
                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20"
-               Visibility="{Binding ComponntsVisibility}"/>
+               Visibility="{Binding ComponentsVisibility}"/>
     </Grid>
 
     <!-- 強制終了コマンド -->

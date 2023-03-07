@@ -24,8 +24,10 @@ namespace TVmeetLauncher
             Logger.GetInstance.WriteLog("Start \"TV Meeting Launcher\".");
 
             InitializeComponent();
-            WinUIAPI.TskBarHide();
-            WinUIAPI.TskBarAutoHide(true);
+            CommandViewModel.Instance.IsTaskBarHide = true;
+            CommandViewModel.Instance.IsTaskBarAutoHide = true;
+            //WinUIAPI.TskBarHide();
+            //WinUIAPI.TskBarAutoHide(true);
         }
 
         private void MetroWindow_ContentRendered(object sender, System.EventArgs e)
@@ -41,27 +43,30 @@ namespace TVmeetLauncher
                 propertyInfo.SetValue(BaseViewModel.Instance, (int)(value * ConstParams.ViewScale));
             }
             // メイン画面ロゴ表示
-            BaseViewModel.Instance.ComponntsVisibility = "Visible";
+            BaseViewModel.Instance.ComponentsVisibility = "Visible";
             // ランチャウィンドウ生成
-            //LauncherWindow launcherWindow = new LauncherWindow();
+            LauncherWindow launcherWindow = new LauncherWindow();
 #if !DEBUG
             // スプラッシュスクリーン表示
             SplashScreen splashScreen = new SplashScreen();
             splashScreen.ShowDialog();
 #endif
+            //launcherWindow.Activated += new EventHandler(splashScreen.CloseEvent);
             // ランチャ画面描画
-            //launcherWindow.Show();
+            launcherWindow.Show();
             // ランチャ画面を閉じたらメイン画面も閉じる
-            splashScreen.launcherWindow.Closed += new EventHandler(CloseEvent);
+            launcherWindow.Closed += new EventHandler(CloseEvent);
             // ランチャ画面の終了処理を、終了ボタン押下時のアクションコマンドへ追加
-            CommandViewModel.Instance.CloseWindowAction = new Action(splashScreen.launcherWindow.Close);
+            CommandViewModel.Instance.CloseWindowAction = new Action(launcherWindow.Close);
         }
 
         private void MetroWindow_Closing(object sender, CancelEventArgs e)
         {
             CommandViewModel.Instance.IsTaskBarPollingRun = false;
-            WinUIAPI.TskBarDisp();
-            WinUIAPI.TskBarAutoHide(false);
+            CommandViewModel.Instance.IsTaskBarHide = false;
+            CommandViewModel.Instance.IsTaskBarAutoHide = false;
+            //WinUIAPI.TskBarDisp();
+            //WinUIAPI.TskBarAutoHide(false);
             Logger.GetInstance.WriteLog("Exit \"TV Meeting Launcher\".");
         }
 

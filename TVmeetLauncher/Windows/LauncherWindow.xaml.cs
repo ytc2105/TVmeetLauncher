@@ -7,6 +7,7 @@ using Sprache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -18,6 +19,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WIN32API;
+using static TVmeetLauncher.ConstParams;
 
 namespace TVmeetLauncher
 {
@@ -33,18 +35,18 @@ namespace TVmeetLauncher
         /// </summary>
         internal static readonly List<MeetAppInfo> appsInfo = new List<MeetAppInfo>()
         {   //                  会議アプリ名,                                     (レジストリパス),                                                                           ルートレジストリキー
-            //new MeetAppInfo(ConstParams.MeetingApplication.GoogleMeet,     @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\b3980fc0325e45a7cd5ddcdab50ab4ba",        Microsoft.Win32.RegistryHive.CurrentUser),
-            //new MeetAppInfo(ConstParams.MeetingApplication.Zoom,           @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZoomUMX",                                 Microsoft.Win32.RegistryHive.CurrentUser),
-            //new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeams, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Teams",                                   Microsoft.Win32.RegistryHive.CurrentUser),
-            //new MeetAppInfo(ConstParams.MeetingApplication.Webex,          @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{42C2D2B4-DCC7-47B9-B404-57705328E84A}",  Microsoft.Win32.RegistryHive.LocalMachine),
-            //new MeetAppInfo(ConstParams.MeetingApplication.Skype,          @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Skype.exe",  Microsoft.Win32.RegistryHive.LocalMachine),
+            //new MeetAppInfo(MeetingApplication.GoogleMeet,     @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\b3980fc0325e45a7cd5ddcdab50ab4ba",        Microsoft.Win32.RegistryHive.CurrentUser),
+            //new MeetAppInfo(MeetingApplication.Zoom,           @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZoomUMX",                                 Microsoft.Win32.RegistryHive.CurrentUser),
+            //new MeetAppInfo(MeetingApplication.MicrosoftTeams, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Teams",                                   Microsoft.Win32.RegistryHive.CurrentUser),
+            //new MeetAppInfo(MeetingApplication.Webex,          @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{42C2D2B4-DCC7-47B9-B404-57705328E84A}",  Microsoft.Win32.RegistryHive.LocalMachine),
+            //new MeetAppInfo(MeetingApplication.Skype,          @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Skype.exe",  Microsoft.Win32.RegistryHive.LocalMachine),
             //                  会議アプリ名,                                     ルートレジストリキー
-            new MeetAppInfo(ConstParams.MeetingApplication.Webex,          Microsoft.Win32.RegistryHive.LocalMachine),
-            new MeetAppInfo(ConstParams.MeetingApplication.Skype,          Microsoft.Win32.RegistryHive.LocalMachine),
-            new MeetAppInfo(ConstParams.MeetingApplication.Zoom,           Microsoft.Win32.RegistryHive.CurrentUser),
-            new MeetAppInfo(ConstParams.MeetingApplication.GoogleMeet,     Microsoft.Win32.RegistryHive.CurrentUser),
-            new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeams, Microsoft.Win32.RegistryHive.CurrentUser),
-            //new MeetAppInfo(ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool, Microsoft.Win32.RegistryHive.CurrentUser),
+            new MeetAppInfo(MeetingApplication.Webex,          Microsoft.Win32.RegistryHive.LocalMachine),
+            new MeetAppInfo(MeetingApplication.Skype,          Microsoft.Win32.RegistryHive.LocalMachine),
+            new MeetAppInfo(MeetingApplication.Zoom,           Microsoft.Win32.RegistryHive.CurrentUser),
+            new MeetAppInfo(MeetingApplication.GoogleMeet,     Microsoft.Win32.RegistryHive.CurrentUser),
+            new MeetAppInfo(MeetingApplication.MicrosoftTeams, Microsoft.Win32.RegistryHive.CurrentUser),
+            new MeetAppInfo(MeetingApplication.MicrosoftTeamsWorkOrSchool, Microsoft.Win32.RegistryHive.CurrentUser),  //@@TEST Teams
         };
 
         public LauncherWindow()
@@ -54,8 +56,24 @@ namespace TVmeetLauncher
             try
             {
                 /// Meeting applications 設定
-                foreach (MeetAppInfo item in appsInfo)
+//                foreach (MeetAppInfo item in appsInfo)
+                for(int i = 0; i < appsInfo.Count(); i++)
                 {
+                    MeetAppInfo item = appsInfo[i];
+                    // Windows 11版 Teams処理
+                    if (item.MeetApp == MeetingApplication.MicrosoftTeamsWorkOrSchool)
+                    {
+                        MeetAppInfo itemTeams = appsInfo[i - 1];
+                        if (item.RegistryPath == itemTeams.RegistryPath) 
+                        {
+                            appsInfo.Remove(item);
+                            continue;
+                        }
+                        else
+                        {
+                            item.AppName += "(職場または学校)";
+                        }
+                    }
                     SetMeetApps(item);
                 }
 
@@ -109,7 +127,7 @@ namespace TVmeetLauncher
                 if (appCnt == 0)
                 {
                     logger.WriteLog($"Apps Count {appCnt}, Can't find any Meeting Application.", Logger.LogLevel.Error);
-                    AddCloseToContentRenderedEvent("ミーティングアプリケーションが見つかりませんでした。\nテレビ会議システムを終了します。", "異常終了");
+                    AddCloseToContentRenderedEvent("ミーティングアプリケーションが見つかりませんでした。\nミーティングアプリケーションがインストールされているか確認してください。\n\nテレビ会議システムを終了します。", "終了します");
                 }
                 else 
                 {
@@ -193,6 +211,9 @@ namespace TVmeetLauncher
                                         // exe
                                         exePath = appkey.GetValue("InstallLocation").ToString();
                                         exePath += @"\current\Teams.exe";
+                                        if ( GetWinVer().Contains("Windows 11") )
+                                            logger.WriteLog("Not installed \"Microsoft Teams\" UWP app.");
+                                        //return;
                                     } // UWP(WindowsStore)app
                                     else
                                     {
@@ -203,25 +224,15 @@ namespace TVmeetLauncher
                                     // arguments
                                     exeArgs = "";
                                     break;
-                                //case ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool:
-                                //    // Installed App
-                                //    if (appkey.GetValue("DisplayIcon") != null)
-                                //    {
-                                //        // Icon
-                                //        iconPath = appkey.GetValue("DisplayIcon").ToString();
-                                //        // exe
-                                //        exePath = appkey.GetValue("InstallLocation").ToString();
-                                //        exePath += @"\current\Teams.exe";
-                                //    } // UWP(WindowsStore)app
-                                //    else
-                                //    {
-                                //        iconPath = appkey.GetValue("PackageRootFolder").ToString() + @"\msteams.exe";
-                                //        exePath = "msteams.exe"; //@"shell:appsfolder\Microsoft.SkypeApp_kzf8qxf38zg5c!App";
-                                //    }
-
-                                //    // arguments
-                                //    exeArgs = "";
-                                //    break;
+                                case ConstParams.MeetingApplication.MicrosoftTeamsWorkOrSchool: //@@TEST Teams
+                                    // Icon
+                                    iconPath = appkey.GetValue("DisplayIcon").ToString();
+                                    // exe
+                                    exePath = appkey.GetValue("InstallLocation").ToString();
+                                    exePath += @"\current\Teams.exe";
+                                    // arguments
+                                    exeArgs = "";
+                                    break;
                                 case ConstParams.MeetingApplication.Webex:
                                     // Icon
                                     iconPath = appkey.GetValue("InstallLocation").ToString();
@@ -358,7 +369,7 @@ namespace TVmeetLauncher
                 /// Set App Icon Image
                 Image image = new Image
                 {
-                    Name = "img" + appName.Replace(" ", String.Empty),
+                    //Name = "img" + appName.Replace(" ", String.Empty),
                     Height = ConstParams.iconHeight * ConstParams.ViewScale,
                     Width = ConstParams.iconWidth * ConstParams.ViewScale,
                 };
@@ -370,7 +381,7 @@ namespace TVmeetLauncher
                 /// Set App Button
                 ButtonEx button = new ButtonEx
                 {
-                    Name = "btn" + appName.Replace(" ", String.Empty),
+                    //Name = "btn" + appName.Replace(" ", String.Empty),
                     Height = (ConstParams.iconHeight + ConstParams.buttonMargin) * ConstParams.ViewScale,
                     Width = (ConstParams.iconWidth + ConstParams.buttonMargin) * ConstParams.ViewScale,
                     Cursor = Cursors.Hand,
@@ -551,16 +562,6 @@ namespace TVmeetLauncher
 
                 return source;
             }
-        }
-
-        private void HideTaskbar_Checked(object sender, RoutedEventArgs e)
-        {
-            WinUIAPI.TskBarHide();
-        }
-
-        private void HideTaskbar_Unchecked(object sender, RoutedEventArgs e)
-        {
-            WinUIAPI.TskBarDisp();
         }
 
         private void MetroWindow_KeyDown(object sender, KeyEventArgs e)
