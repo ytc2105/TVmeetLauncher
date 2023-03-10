@@ -8,7 +8,7 @@ using System.Windows;
 // アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
 [assembly: AssemblyTitle("Smabri")]
-[assembly: AssemblyDescription("エレコムのテレビ会議システム")]
+[assembly: AssemblyDescription("テレビ会議システム")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ELECOM")]
 [assembly: AssemblyProduct("Smabri™")]

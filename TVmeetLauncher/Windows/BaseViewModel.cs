@@ -1,8 +1,11 @@
-﻿using MaterialDesignThemes.Wpf;
+﻿using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using WIN32API;
 
 namespace TVmeetLauncher
@@ -383,8 +386,8 @@ namespace TVmeetLauncher
         {
             get 
             {
-                if ( ConstParams.IsWindows11() )
-                    _autoHideVisibility = "Collapsed";
+                if (ConstParams.IsWindows11())
+                    _autoHideVisibility = "Collapsed"; //@@TEST Win11のAutoHideはレジストリをいじるので起動時のみに限定
                 else
                     _autoHideVisibility = "Visible";
 
@@ -472,7 +475,10 @@ namespace TVmeetLauncher
         // タスクバーを自動的に隠す
         private void AutoHideTaskbar(object parameter)
         {
-            WinUIAPI.TskBarAutoHide((bool)parameter);
+            if (ConstParams.IsWindows11())
+                AutoHide((bool)parameter);
+            else
+                WinUIAPI.TskBarAutoHide((bool)parameter);
         }
 
         // 強制終了コマンド
@@ -484,6 +490,65 @@ namespace TVmeetLauncher
         {
             _isTaskBarPollingRun = false;
             CloseWindowAction();
+        }
+
+        // Windows11用-レジストリを書き換えてエクスプローラを再起動(強制中断) //@@TEST TaskBarAutoHide 一先ずここに実装
+        public static void AutoHide(bool enable)
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3", true))
+            {
+                if (key != null)
+                {
+                    byte[] data = (byte[])key.GetValue("Settings");
+                    if (data != null)
+                    {
+                        // Settingsの9バイト目のLSBを1(7a->7b)にすることで自動的に隠す設定が有効になる
+                        int buf = ~0x01;
+                        byte compByte = (byte)buf;
+                        if (enable)
+                            data[8] |= 0x01;
+                        else
+                            data[8] &= compByte;
+
+                        key.SetValue("Settings", data);
+
+                        // explorer.exeの再起動
+                        RestartExplorer();
+                    }
+                }
+            }
+        }
+
+        public static void RestartExplorer()
+        {
+            // 一旦終了させる
+            foreach (Process exp in Process.GetProcessesByName("explorer"))
+            {
+                try
+                {
+                    // explorerのプロセスを中断
+                    exp.Kill();
+                }
+                // 終了できなかった場合の処理
+                catch (Exception)
+                {
+                    // タスクを強制終了
+                    Process.Start("taskkill", "/F /PID " + exp.Id);
+                    // 少し待つ
+                    System.Threading.Thread.Sleep(500);
+                    // explorer.exeを起動する
+                    Process explorer = new Process();
+                    explorer.StartInfo.FileName = "explorer.exe";
+                    //explorer.StartInfo.Arguments = "::";
+                    //explorer.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    //explorer.StartInfo.CreateNoWindow = true;
+                    //explorer.StartInfo.UseShellExecute = false;
+                    //explorer.StartInfo.RedirectStandardOutput = true;
+
+                    explorer.Start();
+                    explorer.Kill(); // Windowの再表示を防ぐ為、起動直後にプロセスを中断
+                }
+            }
         }
     }
 }

@@ -127,7 +127,14 @@ namespace TVmeetLauncher
                 if (appCnt == 0)
                 {
                     logger.WriteLog($"Apps Count {appCnt}, Can't find any Meeting Application.", Logger.LogLevel.Error);
-                    AddCloseToContentRenderedEvent("ミーティングアプリケーションが見つかりませんでした。\nミーティングアプリケーションがインストールされているか確認してください。\n\nテレビ会議システムを終了します。", "終了します");
+                    string meetAppNames = "";
+                    foreach (MeetAppInfo app in appsInfo)
+                    {
+                        meetAppNames += $"・{app.AppName}\n";
+                    }
+                    AddCloseToContentRenderedEvent($"会議アプリケーションが見つかりませんでした。" +
+                        $"\n以下のアプリケーションがインストールされているか確認してください。\n\n" +
+                        $"{meetAppNames}\n\nテレビ会議システムを終了します。", "会議アプリケーションが見つかりません");
                 }
                 else 
                 {

@@ -144,7 +144,7 @@ namespace TVmeetLauncher
                 using (StreamWriter Fs =
                     new StreamWriter(LogFileFullPath, Convert.ToBoolean(LogWriteMode == LogWriteModeType.Append), Encoding.GetEncoding(Encode)))
                 {
-                    System.Diagnostics.Debug.Write(LogString);  // @@TEST for DEBUG
+                    System.Diagnostics.Debug.Write(LogString);
                     Fs.Write(LogString);
                     Fs.Close();
 

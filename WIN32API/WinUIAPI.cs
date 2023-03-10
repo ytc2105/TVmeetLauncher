@@ -193,7 +193,7 @@ namespace WIN32API
             pData.cbSize = Marshal.SizeOf(pData);
             pData.hWnd = taskBarHwnd;
             //pData.uEdge = ABEdge.ABE_LEFT;
-            //SHAppBarMessage(ABMsg.ABM_GETSTATE, ref pData);
+            SHAppBarMessage(ABMsg.ABM_GETSTATE, ref pData);
             if (isAutoHide)  // タスクバーを自動で隠す
             {
                 pData.lParam = (IntPtr)ABState.ABS_AUTOHIDE;

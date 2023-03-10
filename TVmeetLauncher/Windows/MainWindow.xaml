@@ -10,7 +10,7 @@
         DataContext="{x:Static local:BaseViewModel.Instance}"
         Style="{StaticResource Window_Common}"
 
-        Title="テレビ会議システム"
+        Title=""
         TitleForeground="AliceBlue" TitleCharacterCasing="Normal"
         WindowTitleBrush="#004098" NonActiveWindowTitleBrush="#6fb6c9"
         WindowState="Maximized" IgnoreTaskbarOnMaximize="True" Topmost="False"

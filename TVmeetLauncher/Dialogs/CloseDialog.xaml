@@ -19,7 +19,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <StackPanel Margin="16" Grid.Row="0" Orientation="Vertical">
-                <TextBlock Text="テレビ会議システムを終了しますか?" FontSize="{Binding SubtitleFontSize}"/>
+                <TextBlock Text="{Binding ProductDescription, StringFormat={}{0}を終了しますか?}" FontSize="{Binding SubtitleFontSize}"/>
             </StackPanel>
             <StackPanel Grid.Row="1" Margin="16" HorizontalAlignment="Right" Orientation="Horizontal">
 
