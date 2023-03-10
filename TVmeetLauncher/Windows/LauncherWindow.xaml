@@ -72,12 +72,13 @@
                 </materialDesign:PopupBox.ToggleCheckedContent>
                     <Border Grid.Row="1" Background="AliceBlue" BorderBrush="LightSlateGray" BorderThickness="1" CornerRadius="5">
                         <StackPanel Margin="10">
-                            <Button Content="設定"
+                        <Button Content="設定"
                                 HorizontalContentAlignment="Left"
                                 FontSize="{Binding CaptionFontSize}"
                                 Height="{Binding DialogButtonHeight}"
                                 Style="{StaticResource MaterialDesignFlatDarkButton}"
-                                Command="{Binding Source={x:Static local:CommandViewModel.Instance}, Path=ShowOptionCommand}"/>
+                                Command="{Binding Source={x:Static local:CommandViewModel.Instance}, Path=ShowOptionCommand}"
+                                Visibility="{Binding AutoHideVisibility, Source={x:Static local:CommandViewModel.Instance}}"/>
 
                             <Button Content="バージョン情報"
                                 HorizontalContentAlignment="Left"

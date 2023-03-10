@@ -26,8 +26,8 @@
 
             <StackPanel Grid.Row="1" Orientation="Vertical">
                 
-                <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" 
-                                     BorderBrush="LightGray" Visibility="Visible">
+                <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" BorderBrush="LightGray" 
+                                     Visibility="Visible">
                     <DockPanel>
                         <StackPanel Orientation="Vertical">
                             <TextBlock Text="タスクバーを非表示にする" Margin="10"
@@ -51,7 +51,8 @@
                 </materialDesign:Card>
 
                 <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" BorderBrush="LightGray" 
-                                     Visibility="{Binding AutoHideVisibility, Source={x:Static local:CommandViewModel.Instance}}">
+                                     Visibility="Visible">
+                                    <!--Visibility="{Binding AutoHideVisibility, Source={x:Static local:CommandViewModel.Instance}}"-->
                     <DockPanel>
                         <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
                             <TextBlock Text="タスクバーを自動的に隠す" Margin="10"
