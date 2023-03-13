@@ -131,4 +131,9 @@
         </Grid>
     </materialDesign:DialogHost>
 
+    <!-- 強制終了コマンド -->
+    <mah:MetroWindow.InputBindings>
+        <KeyBinding Gesture="Ctrl+Alt+F4" Command="{Binding ForceCloseCommand, Source={x:Static local:CommandViewModel.Instance}}"/>
+    </mah:MetroWindow.InputBindings>
+
 </mah:MetroWindow>

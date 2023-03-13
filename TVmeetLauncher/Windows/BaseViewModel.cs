@@ -386,6 +386,9 @@ namespace TVmeetLauncher
         {
             get 
             {
+#if DEBUG
+                return "Visible";
+#endif
                 if (ConstParams.IsWindows11())
                     _autoHideVisibility = "Collapsed"; //@@TEST Win11のAutoHideはレジストリをいじるので起動時のみに限定
                 else
@@ -539,11 +542,6 @@ namespace TVmeetLauncher
                     // explorer.exeを起動する
                     Process explorer = new Process();
                     explorer.StartInfo.FileName = "explorer.exe";
-                    //explorer.StartInfo.Arguments = "::";
-                    //explorer.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                    //explorer.StartInfo.CreateNoWindow = true;
-                    //explorer.StartInfo.UseShellExecute = false;
-                    //explorer.StartInfo.RedirectStandardOutput = true;
 
                     explorer.Start();
                     explorer.Kill(); // Windowの再表示を防ぐ為、起動直後にプロセスを中断
