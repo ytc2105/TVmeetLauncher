@@ -6,6 +6,8 @@ using Prism.Mvvm;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using WIN32API;
 
 namespace TVmeetLauncher
@@ -479,9 +481,15 @@ namespace TVmeetLauncher
         private void AutoHideTaskbar(object parameter)
         {
             if (ConstParams.IsWindows11())
+            {
                 AutoHide((bool)parameter);
+                Thread.Sleep(2000);
+                WinUIAPI.ResetHwnd();
+            }
             else
+            {
                 WinUIAPI.TskBarAutoHide((bool)parameter);
+            }
         }
 
         // 強制終了コマンド

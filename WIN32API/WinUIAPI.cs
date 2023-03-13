@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Windows.Navigation;
 
 namespace WIN32API
 {
@@ -161,8 +163,8 @@ namespace WIN32API
         [DllImport("SHELL32.DLL")]
         private static extern int SHAppBarMessage(ABMsg dwMessage, ref APPBARDATA pData);
 
-        public static readonly IntPtr taskBarHwnd = FindWindow("Shell_TrayWnd", null);
-        private static readonly IntPtr startMenuHwnd = FindWindow("Windows.UI.Core.CoreWindow", "スタート");
+        private static IntPtr taskBarHwnd = FindWindow("Shell_TrayWnd", null);
+        private static IntPtr startMenuHwnd = FindWindow("Windows.UI.Core.CoreWindow", "スタート");
 
         /// <summary>
         /// タスクバーを非表示にする
@@ -191,7 +193,7 @@ namespace WIN32API
             pData.cbSize = Marshal.SizeOf(pData);
             pData.hWnd = taskBarHwnd;
             //pData.uEdge = ABEdge.ABE_LEFT;
-            SHAppBarMessage(ABMsg.ABM_GETSTATE, ref pData);
+            //SHAppBarMessage(ABMsg.ABM_GETSTATE, ref pData);
             if (isAutoHide)  // タスクバーを自動で隠す
             {
                 pData.lParam = (IntPtr)ABState.ABS_AUTOHIDE;
@@ -243,6 +245,22 @@ namespace WIN32API
             }
 
             return isTaskbarAutoHide;
+        }
+
+        /// <summary>
+        /// タスクバーのHwndを再設定
+        /// </summary>
+        public static void ResetHwnd()
+        {
+            taskBarHwnd = IntPtr.Zero;
+            startMenuHwnd = IntPtr.Zero;
+            for (int i = 0; i < 10 && 
+                    (taskBarHwnd == IntPtr.Zero || startMenuHwnd == IntPtr.Zero); i++)
+            {
+                taskBarHwnd = FindWindow("Shell_TrayWnd", null);
+                startMenuHwnd = FindWindow("Windows.UI.Core.CoreWindow", "スタート");
+                Thread.Sleep(200);
+            }
         }
 
         /// <summary>
